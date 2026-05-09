@@ -445,19 +445,19 @@ export const useTeamStore = create<TeamStore>()(
         {
           id: 'ghifari-azhar',
           name: 'Ghifari Azhar',
-          email: 'ghifari@coffeeskill.id',
+          email: 'fahriazhar148@gmail.com',
           role: 'Developer',
           avatar: 'https://i.ibb.co.com/wZ2g7G5w/image.png',
-          github: 'ghifariazhar',
+          github: 'jonalexanderhere',
           bio: 'Passionate developer dan founder di CoffeeSkill. Membangun platform pembelajaran teknologi terdepan dari Lampung Barat.'
         },
         {
           id: 'rico',
           name: 'Rico',
-          email: 'rico@coffeeskill.id',
+          email: 'rikoiqbal36@gmail.com',
           role: 'Developer',
           avatar: 'https://i.ibb.co.com/GQGdMzYV/Rico.jpg',
-          github: 'rico',
+          github: 'RikoDev-it',
           bio: 'Creative Developer dan Co-Founder di CoffeeSkill. Berfokus pada pengembangan antarmuka pengguna yang intuitif dan performa aplikasi yang tinggi.'
         }
       ],
