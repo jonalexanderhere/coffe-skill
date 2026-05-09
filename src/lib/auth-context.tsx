@@ -174,13 +174,28 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   const loginWithGoogle = async () => {
-    if (!isSupabaseConfigured) return;
-    await supabase.auth.signInWithOAuth({
-      provider: "google",
-      options: {
-        redirectTo: `${window.location.origin}/auth/callback`,
-      },
-    });
+    console.log("Google Login initiated. Supabase Configured:", isSupabaseConfigured);
+    if (!isSupabaseConfigured) {
+      console.error("Supabase is not configured. Check your environment variables.");
+      alert("Konfigurasi Supabase belum lengkap. Pastikan file .env.local sudah benar.");
+      return;
+    }
+    
+    try {
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: "google",
+        options: {
+          redirectTo: `${window.location.origin}/auth/callback`,
+        },
+      });
+      
+      if (error) {
+        console.error("Supabase OAuth Error:", error.message);
+        alert("Gagal menghubungkan ke Google: " + error.message);
+      }
+    } catch (err) {
+      console.error("Unexpected OAuth error:", err);
+    }
   };
 
   const register = async (data: RegisterData): Promise<boolean> => {
