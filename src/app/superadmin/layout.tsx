@@ -33,13 +33,18 @@ const sidebarLinks = [
   { label: "Pengaturan", href: "/superadmin/settings", icon: Settings },
 ];
 
-export default function SuperAdminLayout({ children }: { children: React.ReactNode }) {
-  const [collapsed, setCollapsed] = useState(false);
-  const [mobileOpen, setMobileOpen] = useState(false);
-  const pathname = usePathname();
-  const { user, logout } = useAuth();
-
-  const SidebarContent = () => (
+function SidebarContent({ 
+  collapsed, 
+  pathname, 
+  logout, 
+  setMobileOpen 
+}: { 
+  collapsed: boolean; 
+  pathname: string; 
+  logout: () => void;
+  setMobileOpen: (open: boolean) => void;
+}) {
+  return (
     <>
       <div className="flex items-center gap-2.5 px-4 py-5 border-b border-coffee-100 dark:border-charcoal-200">
         <Image src="/coffeskill.png" alt="CoffeeSkill" width={28} height={28} className="rounded-lg shrink-0" />
@@ -87,12 +92,24 @@ export default function SuperAdminLayout({ children }: { children: React.ReactNo
       </div>
     </>
   );
+}
+
+export default function SuperAdminLayout({ children }: { children: React.ReactNode }) {
+  const [collapsed, setCollapsed] = useState(false);
+  const [mobileOpen, setMobileOpen] = useState(false);
+  const pathname = usePathname();
+  const { user, logout } = useAuth();
 
   return (
     <div className="min-h-screen flex bg-coffee-50/50 dark:bg-charcoal">
       {/* Desktop Sidebar */}
       <aside className={`hidden lg:flex flex-col bg-white dark:bg-charcoal-light border-r border-coffee-100 dark:border-charcoal-200 transition-all duration-300 shrink-0 ${collapsed ? "w-[72px]" : "w-[260px]"}`}>
-        <SidebarContent />
+        <SidebarContent 
+          collapsed={collapsed} 
+          pathname={pathname} 
+          logout={logout} 
+          setMobileOpen={setMobileOpen} 
+        />
         <button onClick={() => setCollapsed(!collapsed)} className="p-3 border-t border-coffee-100 dark:border-charcoal-200 text-coffee-400 hover:text-coffee-600 flex items-center justify-center">
           <ChevronLeft size={16} className={`transition-transform ${collapsed ? "rotate-180" : ""}`} />
         </button>
@@ -103,7 +120,12 @@ export default function SuperAdminLayout({ children }: { children: React.ReactNo
         <div className="fixed inset-0 z-50 lg:hidden">
           <div className="absolute inset-0 bg-black/30" onClick={() => setMobileOpen(false)} />
           <aside className="absolute left-0 top-0 bottom-0 w-[260px] bg-white dark:bg-charcoal-light flex flex-col shadow-xl">
-            <SidebarContent />
+            <SidebarContent 
+              collapsed={false} 
+              pathname={pathname} 
+              logout={logout} 
+              setMobileOpen={setMobileOpen} 
+            />
           </aside>
         </div>
       )}

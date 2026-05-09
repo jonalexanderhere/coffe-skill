@@ -239,3 +239,29 @@ export interface TeamMember {
   github: string;
   bio?: string;
 }
+
+export interface AuditLog {
+  id: string;
+  timestamp: string;
+  userId?: string;
+  userName?: string;
+  action: string;
+  category: 'auth' | 'system' | 'security' | 'billing' | 'content';
+  details: string;
+  ipAddress: string;
+  status: 'success' | 'failure' | 'warning';
+  severity: 'info' | 'low' | 'medium' | 'high' | 'critical';
+}
+
+export interface SystemHealth {
+  cpuUsage: number;
+  memoryUsage: number;
+  diskUsage: number;
+  uptime: string;
+  activeRequests: number;
+  firewallStatus: 'active' | 'learning' | 'disabled';
+  threatLevel: 'low' | 'moderate' | 'high';
+  blockedIps: number;
+  totalTraffic: number;
+  p75ResponseTime: number;
+}

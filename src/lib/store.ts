@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-import { User, Course, Enrollment, Category, PlatformSettings, Quiz, QuizQuestion, Chapter, Material, Event, Testimonial, FAQ, TeamMember } from './types';
+import { User, Course, Enrollment, Category, PlatformSettings, Quiz, QuizQuestion, Chapter, Material, Event, Testimonial, FAQ, TeamMember, AuditLog, SystemHealth, CourseLevel } from './types';
 
 // ============================
 // User Store
@@ -13,6 +13,7 @@ interface UserStore {
   getUserById: (id: string) => User | undefined;
   getUsersByRole: (role: User['role']) => User[];
   updateUserStatus: (id: string, status: User['status']) => void;
+  deleteDuplicateUsers: () => void;
 }
 
 export const useUserStore = create<UserStore>()(
@@ -47,7 +48,11 @@ export const useUserStore = create<UserStore>()(
           joinedDate: new Date().toISOString().split('T')[0]
         }
       ],
-      addUser: (user) => set((state) => ({ users: [...state.users, user] })),
+      addUser: (user) => set((state) => {
+        const exists = state.users.some(u => u.email === user.email);
+        if (exists) return state;
+        return { users: [...state.users, user] };
+      }),
       updateUser: (id, updates) =>
         set((state) => ({
           users: state.users.map((u) => (u.id === id ? { ...u, ...updates } : u)),
@@ -60,6 +65,15 @@ export const useUserStore = create<UserStore>()(
         set((state) => ({
           users: state.users.map((u) => (u.id === id ? { ...u, status } : u)),
         })),
+      deleteDuplicateUsers: () => set((state) => {
+        const seen = new Set();
+        const uniqueUsers = state.users.filter(u => {
+          if (seen.has(u.email)) return false;
+          seen.add(u.email);
+          return true;
+        });
+        return { users: uniqueUsers };
+      }),
     }),
     { name: 'coffeeskill-users' }
   )
@@ -100,7 +114,7 @@ export const useCourseStore = create<CourseStore>()(
           originalPrice: 499000,
           isFree: true,
           category: 'Development',
-          level: 'Beginner',
+          level: 'Pemula',
           mentorId: 'mentor-1',
           mentorName: 'Mentor 1',
           thumbnail: 'https://i.ibb.co.com/wZ2g7G5w/image.png',
@@ -110,14 +124,45 @@ export const useCourseStore = create<CourseStore>()(
           duration: '12 Jam',
           lessons: 45,
           status: 'published',
-          publishedAt: new Date().toISOString(),
+          tags: ['Next.js', 'React', 'TypeScript'],
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
           chapters: [
             {
               id: 'ch-1',
+              courseId: 'course-1',
               title: 'Pengenalan Next.js',
+              order: 1,
+              isPublished: true,
               materials: [
-                { id: 'mat-1', title: 'Apa itu Next.js?', type: 'video', duration: '10:00', isPreview: true },
-                { id: 'mat-2', title: 'Setup Project Pertama', type: 'video', duration: '15:00', isPreview: false }
+                { 
+                  id: 'mat-1', 
+                  chapterId: 'ch-1', 
+                  courseId: 'course-1', 
+                  title: 'Apa itu Next.js?', 
+                  type: 'video', 
+                  content: 'https://youtube.com/watch?v=1', 
+                  duration: '10:00', 
+                  order: 1, 
+                  isPreview: true, 
+                  isPublished: true, 
+                  createdAt: new Date().toISOString(), 
+                  updatedAt: new Date().toISOString() 
+                },
+                { 
+                  id: 'mat-2', 
+                  chapterId: 'ch-1', 
+                  courseId: 'course-1', 
+                  title: 'Setup Project Pertama', 
+                  type: 'video', 
+                  content: 'https://youtube.com/watch?v=2', 
+                  duration: '15:00', 
+                  order: 2, 
+                  isPreview: false, 
+                  isPublished: true, 
+                  createdAt: new Date().toISOString(), 
+                  updatedAt: new Date().toISOString() 
+                }
               ]
             }
           ]
@@ -130,7 +175,7 @@ export const useCourseStore = create<CourseStore>()(
           originalPrice: 350000,
           isFree: true,
           category: 'Design',
-          level: 'Intermediate',
+          level: 'Menengah',
           mentorId: 'rico-admin',
           mentorName: 'Rico',
           thumbnail: 'https://i.ibb.co.com/GQGdMzYV/Rico.jpg',
@@ -140,13 +185,31 @@ export const useCourseStore = create<CourseStore>()(
           duration: '8 Jam',
           lessons: 30,
           status: 'published',
-          publishedAt: new Date().toISOString(),
+          tags: ['Design', 'Figma', 'UI/UX'],
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
           chapters: [
             {
               id: 'ch-2-1',
+              courseId: 'course-2',
               title: 'Dasar-dasar UI Design',
+              order: 1,
+              isPublished: true,
               materials: [
-                { id: 'mat-2-1', title: 'Prinsip Desain', type: 'video', duration: '12:00', isPreview: true }
+                { 
+                  id: 'mat-2-1', 
+                  chapterId: 'ch-2-1', 
+                  courseId: 'course-2', 
+                  title: 'Prinsip Desain', 
+                  type: 'video', 
+                  content: 'https://youtube.com/watch?v=3', 
+                  duration: '12:00', 
+                  order: 1, 
+                  isPreview: true, 
+                  isPublished: true, 
+                  createdAt: new Date().toISOString(), 
+                  updatedAt: new Date().toISOString() 
+                }
               ]
             }
           ]
@@ -277,6 +340,7 @@ interface EnrollmentStore {
   getEnrollmentsByCourse: (courseId: string) => Enrollment[];
   getEnrollment: (userId: string, courseId: string) => Enrollment | undefined;
   isUserEnrolled: (userId: string, courseId: string) => boolean;
+  deleteDuplicateEnrollments: () => void;
 }
 
 export const useEnrollmentStore = create<EnrollmentStore>()(
@@ -333,6 +397,16 @@ export const useEnrollmentStore = create<EnrollmentStore>()(
         get().enrollments.find((e) => e.userId === userId && e.courseId === courseId),
       isUserEnrolled: (userId, courseId) =>
         get().enrollments.some((e) => e.userId === userId && e.courseId === courseId),
+      deleteDuplicateEnrollments: () => set((state) => {
+        const seen = new Set();
+        const unique = state.enrollments.filter(e => {
+          const key = `${e.userId}-${e.courseId}`;
+          if (seen.has(key)) return false;
+          seen.add(key);
+          return true;
+        });
+        return { enrollments: unique };
+      }),
     }),
     { name: 'coffeeskill-enrollments' }
   )
@@ -554,5 +628,146 @@ export const useTeamStore = create<TeamStore>()(
         set((state) => ({ teamMembers: state.teamMembers.filter((t) => t.id !== id) })),
     }),
     { name: 'coffeeskill-team' }
+  )
+);
+
+// ============================
+// Draft Course Store (Persistence for creation)
+// ============================
+interface DraftCourseStore {
+  currentStep: number;
+  basicInfo: {
+    title: string;
+    shortDescription: string;
+    description: string;
+    category: string;
+    level: CourseLevel;
+    price: number;
+    isFree: boolean;
+    thumbnail: string;
+    tags: string[];
+  };
+  chapters: any[];
+  setStep: (step: number) => void;
+  updateBasicInfo: (info: Partial<DraftCourseStore['basicInfo']>) => void;
+  setChapters: (chapters: any[]) => void;
+  resetDraft: () => void;
+}
+
+export const useDraftCourseStore = create<DraftCourseStore>()(
+  persist(
+    (set) => ({
+      currentStep: 1,
+      basicInfo: {
+        title: "",
+        shortDescription: "",
+        description: "",
+        category: "",
+        level: "Pemula" as CourseLevel,
+        price: 0,
+        isFree: false,
+        thumbnail: "",
+        tags: []
+      },
+      chapters: [],
+      setStep: (step) => set({ currentStep: step }),
+      updateBasicInfo: (info) => set((state) => ({
+        basicInfo: { ...state.basicInfo, ...info }
+      })),
+      setChapters: (chapters) => set({ chapters }),
+      resetDraft: () => set({
+        currentStep: 1,
+        basicInfo: {
+          title: "",
+          shortDescription: "",
+          description: "",
+          category: "",
+          level: "Pemula" as CourseLevel,
+          price: 0,
+          isFree: false,
+          thumbnail: "",
+          tags: []
+        },
+        chapters: []
+      })
+    }),
+    { name: 'coffeeskill-course-draft' }
+  )
+);
+
+// ============================
+// System & Audit Store
+// ============================
+interface SystemStore {
+  logs: AuditLog[];
+  health: SystemHealth;
+  addLog: (log: Omit<AuditLog, 'id' | 'timestamp'>) => void;
+  updateHealth: (updates: Partial<SystemHealth>) => void;
+  clearLogs: () => void;
+}
+
+export const useSystemStore = create<SystemStore>()(
+  persist(
+    (set) => ({
+      logs: [
+        {
+          id: 'log-1',
+          timestamp: new Date(Date.now() - 1000 * 60 * 5).toISOString(),
+          action: 'Login Success',
+          category: 'auth',
+          details: 'User fahriazhar148@gmail.com logged in from Chrome/Windows',
+          ipAddress: '182.1.44.12',
+          status: 'success',
+          severity: 'info'
+        },
+        {
+          id: 'log-2',
+          timestamp: new Date(Date.now() - 1000 * 60 * 15).toISOString(),
+          action: 'Course Published',
+          category: 'content',
+          details: 'Course "Mastering Coffee Brewing" was published by Mentor 1',
+          ipAddress: '182.1.44.12',
+          status: 'success',
+          severity: 'info'
+        },
+        {
+          id: 'log-3',
+          timestamp: new Date(Date.now() - 1000 * 60 * 45).toISOString(),
+          action: 'SQL Injection Attempt',
+          category: 'security',
+          details: 'Detected suspicious pattern in request to /api/courses',
+          ipAddress: '45.122.1.9',
+          status: 'failure',
+          severity: 'high'
+        }
+      ],
+      health: {
+        cpuUsage: 12.5,
+        memoryUsage: 450,
+        diskUsage: 2.1,
+        uptime: '14 Hari 5 Jam',
+        activeRequests: 42,
+        firewallStatus: 'active',
+        threatLevel: 'low',
+        blockedIps: 124,
+        totalTraffic: 154000,
+        p75ResponseTime: 120
+      },
+      addLog: (log) => set((state) => ({
+        logs: [
+          {
+            ...log,
+            id: `log-${Date.now()}`,
+            timestamp: new Date().toISOString()
+          },
+          ...state.logs
+        ].slice(0, 500) // Keep last 500 logs
+      })),
+      updateHealth: (updates) => set((state) => ({
+        health: { ...state.health, ...updates }
+      })),
+      clearLogs: () => set({ logs: [] })
+    }),
+    { name: 'coffeeskill-system' }
   )
 );

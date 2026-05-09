@@ -33,13 +33,20 @@ const sidebarLinks = [
   { label: "Pengaturan", href: "/settings", icon: Settings },
 ];
 
-export default function DashboardLayout({ children }: { children: React.ReactNode }) {
-  const [collapsed, setCollapsed] = useState(false);
-  const [mobileOpen, setMobileOpen] = useState(false);
-  const pathname = usePathname();
-  const { user, logout } = useAuth();
-
-  const SidebarContent = () => (
+function SidebarContent({ 
+  collapsed, 
+  pathname, 
+  user, 
+  logout, 
+  setMobileOpen 
+}: { 
+  collapsed: boolean; 
+  pathname: string; 
+  user: any; 
+  logout: () => void;
+  setMobileOpen: (open: boolean) => void;
+}) {
+  return (
     <>
       {/* Logo */}
       <div className="flex items-center gap-2.5 px-4 py-5 border-b border-coffee-100 dark:border-charcoal-200">
@@ -96,6 +103,13 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       </div>
     </>
   );
+}
+
+export default function DashboardLayout({ children }: { children: React.ReactNode }) {
+  const [collapsed, setCollapsed] = useState(false);
+  const [mobileOpen, setMobileOpen] = useState(false);
+  const pathname = usePathname();
+  const { user, logout } = useAuth();
 
   return (
     <div className="min-h-screen flex bg-coffee-50/50 dark:bg-charcoal">
@@ -105,7 +119,13 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           collapsed ? "w-[72px]" : "w-[260px]"
         }`}
       >
-        <SidebarContent />
+        <SidebarContent 
+          collapsed={collapsed} 
+          pathname={pathname} 
+          user={user} 
+          logout={logout} 
+          setMobileOpen={setMobileOpen} 
+        />
         <button
           onClick={() => setCollapsed(!collapsed)}
           className="p-3 border-t border-coffee-100 dark:border-charcoal-200 text-coffee-400 hover:text-coffee-600 dark:hover:text-white flex items-center justify-center"
@@ -119,7 +139,13 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         <div className="fixed inset-0 z-50 lg:hidden">
           <div className="absolute inset-0 bg-black/30" onClick={() => setMobileOpen(false)} />
           <aside className="absolute left-0 top-0 bottom-0 w-[260px] bg-white dark:bg-charcoal-light flex flex-col shadow-xl">
-            <SidebarContent />
+            <SidebarContent 
+              collapsed={false} 
+              pathname={pathname} 
+              user={user} 
+              logout={logout} 
+              setMobileOpen={setMobileOpen} 
+            />
           </aside>
         </div>
       )}

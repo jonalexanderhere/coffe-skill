@@ -1,11 +1,11 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
-import { Plus, Minus, GripVertical, Video, FileText, HelpCircle, Link as LinkIcon, Check, ChevronRight, ChevronLeft, X } from "lucide-react";
+import { Plus, Minus, GripVertical, Video, FileText, HelpCircle, Link as LinkIcon, Check, ChevronRight, ChevronLeft, X, AlertTriangle } from "lucide-react";
 import { useAuth } from "@/lib/auth-context";
-import { useCourseStore } from "@/lib/store";
+import { useCourseStore, useDraftCourseStore } from "@/lib/store";
 import { useCategoryStore } from "@/lib/store";
 import { CourseLevel } from "@/lib/types";
 
@@ -16,28 +16,20 @@ export default function CreateCoursePage() {
   const { user } = useAuth();
   const { addCourse } = useCourseStore();
   const { categories } = useCategoryStore();
+  
+  // Connect to global draft store
+  const { 
+    currentStep, 
+    basicInfo, 
+    chapters, 
+    setStep, 
+    updateBasicInfo, 
+    setChapters, 
+    resetDraft 
+  } = useDraftCourseStore();
 
-  const [currentStep, setCurrentStep] = useState<Step>(1);
   const [errors, setErrors] = useState<string[]>([]);
-
-  // Step 1: Basic Info
-  const [basicInfo, setBasicInfo] = useState({
-    title: "",
-    shortDescription: "",
-    description: "",
-    category: "",
-    level: "Pemula" as CourseLevel,
-    price: 0,
-    isFree: false,
-    thumbnail: "",
-    tags: [] as string[],
-  });
   const [tagInput, setTagInput] = useState("");
-
-  // Step 2: Curriculum
-  const [chapters, setChapters] = useState<{ id: string; title: string; materials: any[] }[]>([]);
-
-  // Step 3: Materials
   const [selectedChapter, setSelectedChapter] = useState<string | null>(null);
   const [materialForm, setMaterialForm] = useState({
     type: "video" as "video" | "article" | "quiz",
@@ -46,6 +38,18 @@ export default function CreateCoursePage() {
     duration: "",
     isPreview: false,
   });
+
+  // Warn on tab close
+  useEffect(() => {
+    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+      if (basicInfo.title || chapters.length > 0) {
+        e.preventDefault();
+        e.returnValue = "";
+      }
+    };
+    window.addEventListener("beforeunload", handleBeforeUnload);
+    return () => window.removeEventListener("beforeunload", handleBeforeUnload);
+  }, [basicInfo.title, chapters.length]);
 
   const steps = [
     { num: 1, label: "Info Dasar" },
@@ -97,22 +101,22 @@ export default function CreateCoursePage() {
 
   const deleteMaterial = (chapterId: string, materialId: string) => {
     setChapters(chapters.map(ch =>
-      ch.id === chapterId ? { ...ch, materials: ch.materials.filter(m => m.id !== materialId) } : ch
+      ch.id === chapterId ? { ...ch, materials: ch.materials.filter((m: any) => m.id !== materialId) } : ch
     ));
   };
 
   const addTag = () => {
     if (tagInput.trim() && !basicInfo.tags.includes(tagInput.trim())) {
-      setBasicInfo({ ...basicInfo, tags: [...basicInfo.tags, tagInput.trim()] });
+      updateBasicInfo({ tags: [...basicInfo.tags, tagInput.trim()] });
       setTagInput("");
     }
   };
 
   const removeTag = (tag: string) => {
-    setBasicInfo({ ...basicInfo, tags: basicInfo.tags.filter(t => t !== tag) });
+    updateBasicInfo({ tags: basicInfo.tags.filter((t: string) => t !== tag) });
   };
 
-  const validateStep = (step: Step): boolean => {
+  const validateStep = (step: number): boolean => {
     const newErrors: string[] = [];
     
     if (step === 1) {
@@ -132,16 +136,18 @@ export default function CreateCoursePage() {
   const handleNext = () => {
     if (validateStep(currentStep)) {
       if (currentStep < 4) {
-        setCurrentStep((currentStep + 1) as Step);
+        setStep(currentStep + 1);
         setErrors([]);
+        window.scrollTo(0, 0);
       }
     }
   };
 
   const handlePrev = () => {
     if (currentStep > 1) {
-      setCurrentStep((currentStep - 1) as Step);
+      setStep(currentStep - 1);
       setErrors([]);
+      window.scrollTo(0, 0);
     }
   };
 
@@ -175,7 +181,7 @@ export default function CreateCoursePage() {
         courseId,
         title: ch.title,
         order: idx + 1,
-        materials: ch.materials.map((m, mIdx) => ({ ...m, courseId, order: mIdx + 1 })),
+        materials: ch.materials.map((m: any, mIdx: number) => ({ ...m, courseId, order: mIdx + 1 })),
         isPublished: true,
       })),
       createdAt: new Date().toISOString(),
@@ -183,6 +189,7 @@ export default function CreateCoursePage() {
     };
 
     addCourse(courseData);
+    resetDraft(); // Important: clear draft after success
     router.push("/mentor/courses");
   };
 
@@ -247,7 +254,7 @@ export default function CreateCoursePage() {
               <input
                 type="text"
                 value={basicInfo.title}
-                onChange={(e) => setBasicInfo({ ...basicInfo, title: e.target.value })}
+                onChange={(e) => updateBasicInfo({ title: e.target.value })}
                 placeholder="Contoh: Full-Stack Web Development dengan Next.js"
                 className="w-full px-4 py-3 text-sm bg-coffee-50 dark:bg-charcoal border border-coffee-200 dark:border-charcoal-200 rounded-xl text-coffee-800 dark:text-white focus:outline-none"
               />
@@ -260,7 +267,7 @@ export default function CreateCoursePage() {
               <input
                 type="text"
                 value={basicInfo.shortDescription}
-                onChange={(e) => setBasicInfo({ ...basicInfo, shortDescription: e.target.value })}
+                onChange={(e) => updateBasicInfo({ shortDescription: e.target.value })}
                 placeholder="Ringkasan singkat kursus (maks 100 karakter)"
                 className="w-full px-4 py-3 text-sm bg-coffee-50 dark:bg-charcoal border border-coffee-200 dark:border-charcoal-200 rounded-xl text-coffee-800 dark:text-white focus:outline-none"
               />
@@ -272,7 +279,7 @@ export default function CreateCoursePage() {
               </label>
               <textarea
                 value={basicInfo.description}
-                onChange={(e) => setBasicInfo({ ...basicInfo, description: e.target.value })}
+                onChange={(e) => updateBasicInfo({ description: e.target.value })}
                 placeholder="Jelaskan detail kursus, apa yang akan dipelajari, dan target siswa..."
                 rows={5}
                 className="w-full px-4 py-3 text-sm bg-coffee-50 dark:bg-charcoal border border-coffee-200 dark:border-charcoal-200 rounded-xl text-coffee-800 dark:text-white focus:outline-none resize-none"
@@ -286,7 +293,7 @@ export default function CreateCoursePage() {
                 </label>
                 <select
                   value={basicInfo.category}
-                  onChange={(e) => setBasicInfo({ ...basicInfo, category: e.target.value })}
+                  onChange={(e) => updateBasicInfo({ category: e.target.value })}
                   className="w-full px-4 py-3 text-sm bg-coffee-50 dark:bg-charcoal border border-coffee-200 dark:border-charcoal-200 rounded-xl text-coffee-800 dark:text-white focus:outline-none"
                 >
                   <option value="">Pilih Kategori</option>
@@ -301,7 +308,7 @@ export default function CreateCoursePage() {
                 </label>
                 <select
                   value={basicInfo.level}
-                  onChange={(e) => setBasicInfo({ ...basicInfo, level: e.target.value as CourseLevel })}
+                  onChange={(e) => updateBasicInfo({ level: e.target.value as CourseLevel })}
                   className="w-full px-4 py-3 text-sm bg-coffee-50 dark:bg-charcoal border border-coffee-200 dark:border-charcoal-200 rounded-xl text-coffee-800 dark:text-white focus:outline-none"
                 >
                   <option value="Pemula">Pemula</option>
@@ -316,7 +323,7 @@ export default function CreateCoursePage() {
                 <input
                   type="checkbox"
                   checked={basicInfo.isFree}
-                  onChange={(e) => setBasicInfo({ ...basicInfo, isFree: e.target.checked })}
+                  onChange={(e) => updateBasicInfo({ isFree: e.target.checked })}
                   className="w-4 h-4 rounded border-coffee-300 text-accent"
                 />
                 <span className="text-sm text-coffee-700 dark:text-coffee-300">Kursus Gratis</span>
@@ -326,7 +333,7 @@ export default function CreateCoursePage() {
                   <input
                     type="number"
                     value={basicInfo.price || ""}
-                    onChange={(e) => setBasicInfo({ ...basicInfo, price: parseInt(e.target.value) || 0 })}
+                    onChange={(e) => updateBasicInfo({ price: parseInt(e.target.value) || 0 })}
                     placeholder="Harga (IDR)"
                     className="w-full px-4 py-2 text-sm bg-coffee-50 dark:bg-charcoal border border-coffee-200 dark:border-charcoal-200 rounded-xl text-coffee-800 dark:text-white focus:outline-none"
                   />
@@ -378,7 +385,7 @@ export default function CreateCoursePage() {
 
             {chapters.length === 0 ? (
               <div className="text-center py-8 text-coffee-400">
-                <p>Belum ada chapter. Klik "Tambah Chapter" untuk memulai.</p>
+                <p>Belum ada chapter. Klik &quot;Tambah Chapter&quot; untuk memulai.</p>
               </div>
             ) : (
               <div className="space-y-3">
@@ -401,7 +408,7 @@ export default function CreateCoursePage() {
                     <div className="ml-8 mt-2 flex items-center gap-2 text-xs text-coffee-500">
                       <span>{chapter.materials.length} materi</span>
                       <button 
-                        onClick={() => { setSelectedChapter(chapter.id); setCurrentStep(3); }}
+                        onClick={() => { setSelectedChapter(chapter.id); setStep(3); }}
                         className="text-accent hover:underline"
                       >
                         + Tambah materi
@@ -542,13 +549,13 @@ export default function CreateCoursePage() {
                 </button>
 
                 {/* Materials in selected chapter */}
-                {selectedChapter && chapters.find(ch => ch.id === selectedChapter)?.materials.length! > 0 && (
+                {selectedChapter && (chapters.find(ch => ch.id === selectedChapter)?.materials.length || 0) > 0 && (
                   <div className="mt-6 pt-6 border-t border-coffee-100 dark:border-charcoal-200">
                     <h4 className="text-sm font-medium text-coffee-700 dark:text-coffee-300 mb-3">
                       Materi di Chapter Ini
                     </h4>
                     <div className="space-y-2">
-                      {chapters.find(ch => ch.id === selectedChapter)?.materials.map((mat) => (
+                      {chapters.find(ch => ch.id === selectedChapter)?.materials.map((mat: any) => (
                         <div key={mat.id} className="flex items-center justify-between p-3 bg-coffee-50 dark:bg-charcoal-200 rounded-lg">
                           <div className="flex items-center gap-3">
                             {mat.type === "video" && <Video size={16} className="text-blue-500" />}

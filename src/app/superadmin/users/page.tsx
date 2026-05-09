@@ -1,17 +1,35 @@
 "use client";
 
 import { useState } from "react";
-import { motion } from "framer-motion";
-import { Search, Filter, MoreVertical, CheckCircle, XCircle, Ban, Mail, UserCheck, AlertCircle } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
+import { 
+  Search, 
+  Filter, 
+  MoreVertical, 
+  CheckCircle, 
+  XCircle, 
+  Ban, 
+  Mail, 
+  UserCheck, 
+  AlertCircle, 
+  Trash2, 
+  UserPlus, 
+  Download,
+  RefreshCw,
+  ChevronRight,
+  Users,
+  Shield,
+  Award
+} from "lucide-react";
 import { useUserStore } from "@/lib/store";
 import { User, UserRole, UserStatus } from "@/lib/types";
 
 export default function UserManagementPage() {
-  const { users, updateUserStatus } = useUserStore();
+  const { users, updateUserStatus, deleteUser, deleteDuplicateUsers } = useUserStore();
   const [searchQuery, setSearchQuery] = useState("");
   const [roleFilter, setRoleFilter] = useState<UserRole | "all">("all");
   const [statusFilter, setStatusFilter] = useState<UserStatus | "all">("all");
-  const [selectedUser, setSelectedUser] = useState<User | null>(null);
+  const [isCleaning, setIsCleaning] = useState(false);
 
   const filteredUsers = users.filter((user) => {
     const matchesSearch = user.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -21,12 +39,13 @@ export default function UserManagementPage() {
     return matchesSearch && matchesRole && matchesStatus;
   });
 
-  const handleApproveMentor = (userId: string) => {
-    updateUserStatus(userId, "active");
-  };
-
-  const handleRejectMentor = (userId: string) => {
-    updateUserStatus(userId, "suspended");
+  const handleCleanDuplicates = () => {
+    setIsCleaning(true);
+    setTimeout(() => {
+      deleteDuplicateUsers();
+      setIsCleaning(false);
+      alert("Data berhasil dibersihkan dari duplikat!");
+    }, 1000);
   };
 
   const handleToggleStatus = (userId: string, currentStatus: UserStatus) => {
@@ -34,179 +53,224 @@ export default function UserManagementPage() {
   };
 
   return (
-    <div className="max-w-7xl mx-auto space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold text-coffee-800 dark:text-white" style={{ fontFamily: "var(--font-poppins)" }}>
-          Manajemen Pengguna
-        </h1>
-        <p className="text-sm text-coffee-500 dark:text-coffee-400 mt-1">
-          Kelola semua user di platform CoffeeSkill
-        </p>
-      </div>
-
-      {/* Filters */}
-      <div className="bg-white dark:bg-charcoal-light rounded-2xl border border-coffee-100 dark:border-charcoal-200 p-4 flex flex-col sm:flex-row items-center gap-4">
-        <div className="relative flex-1 w-full">
-          <Search size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-coffee-400" />
-          <input
-            type="text"
-            placeholder="Cari nama atau email..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full pl-10 pr-4 py-2.5 text-sm bg-coffee-50 dark:bg-charcoal border border-transparent rounded-xl text-coffee-800 dark:text-white focus:outline-none"
-          />
+    <div className="max-w-7xl mx-auto space-y-8 pb-12">
+      {/* Header Section */}
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div>
+          <h1 className="text-3xl font-bold text-white tracking-tight" style={{ fontFamily: "var(--font-poppins)" }}>
+            User <span className="text-accent">Ecosystem</span>
+          </h1>
+          <p className="text-coffee-400 mt-1 flex items-center gap-2">
+            <Users size={14} /> Total {users.length} pengguna terdaftar di platform
+          </p>
         </div>
-        <div className="flex items-center gap-2 w-full sm:w-auto">
-          <select
-            value={roleFilter}
-            onChange={(e) => setRoleFilter(e.target.value as UserRole | "all")}
-            className="px-3 py-2.5 text-sm bg-coffee-50 dark:bg-charcoal border border-coffee-200 dark:border-charcoal-200 rounded-xl text-coffee-700 dark:text-coffee-300 outline-none cursor-pointer"
+        <div className="flex items-center gap-3">
+          <button 
+            onClick={handleCleanDuplicates}
+            disabled={isCleaning}
+            className="flex items-center gap-2 px-4 py-2.5 text-sm font-medium text-coffee-300 bg-charcoal-light border border-charcoal-200 rounded-xl hover:bg-charcoal-200 transition-all hover:border-accent/30 disabled:opacity-50"
           >
-            <option value="all">Semua Role</option>
-            <option value="student">Siswa</option>
-            <option value="mentor">Mentor</option>
-            <option value="superadmin">Super Admin</option>
-          </select>
-          <select
-            value={statusFilter}
-            onChange={(e) => setStatusFilter(e.target.value as UserStatus | "all")}
-            className="px-3 py-2.5 text-sm bg-coffee-50 dark:bg-charcoal border border-coffee-200 dark:border-charcoal-200 rounded-xl text-coffee-700 dark:text-coffee-300 outline-none cursor-pointer"
-          >
-            <option value="all">Semua Status</option>
-            <option value="active">Aktif</option>
-            <option value="pending">Pending</option>
-            <option value="inactive">Nonaktif</option>
-            <option value="suspended">Suspended</option>
-          </select>
+            <RefreshCw size={16} className={isCleaning ? "animate-spin" : ""} />
+            {isCleaning ? "Membersihkan..." : "Bersihkan Duplikat"}
+          </button>
+          <button className="flex items-center gap-2 px-4 py-2.5 text-sm font-semibold text-white bg-accent hover:bg-accent-hover rounded-xl shadow-lg shadow-accent/20 transition-all active:scale-95">
+            <UserPlus size={18} /> Tambah User
+          </button>
         </div>
       </div>
 
-      {/* Stats Cards */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+      {/* Stats Dashboard */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
         {[
-          { label: "Total Users", value: users.length, color: "text-blue-500" },
-          { label: "Siswa", value: users.filter(u => u.role === 'student').length, color: "text-emerald-500" },
-          { label: "Mentor", value: users.filter(u => u.role === 'mentor').length, color: "text-purple-500" },
-          { label: "Pending", value: users.filter(u => u.status === 'pending').length, color: "text-amber-500" },
+          { label: "Active Students", value: users.filter(u => u.role === 'student' && u.status === 'active').length, color: "from-emerald-500/20 to-emerald-500/5", textColor: "text-emerald-400", icon: UserCheck },
+          { label: "Verified Mentors", value: users.filter(u => u.role === 'mentor' && u.status === 'active').length, color: "from-blue-500/20 to-blue-500/5", textColor: "text-blue-400", icon: Award },
+          { label: "Pending Requests", value: users.filter(u => u.status === 'pending').length, color: "from-amber-500/20 to-amber-500/5", textColor: "text-amber-400", icon: AlertCircle },
+          { label: "Suspended Users", value: users.filter(u => u.status === 'suspended').length, color: "from-red-500/20 to-red-500/5", textColor: "text-red-400", icon: Ban },
         ].map((stat, i) => (
           <motion.div
             key={stat.label}
-            initial={{ opacity: 0, y: 10 }}
+            initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: i * 0.05 }}
-            className="bg-white dark:bg-charcoal-light rounded-xl border border-coffee-100 dark:border-charcoal-200 p-4"
+            transition={{ delay: i * 0.1 }}
+            className={`relative overflow-hidden bg-gradient-to-br ${stat.color} border border-white/5 rounded-2xl p-6 backdrop-blur-sm group hover:border-white/10 transition-colors`}
           >
-            <p className="text-2xl font-bold text-coffee-800 dark:text-white">{stat.value}</p>
-            <p className={`text-xs font-medium ${stat.color} mt-1`}>{stat.label}</p>
+            <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
+              <stat.icon size={64} />
+            </div>
+            <p className="text-3xl font-bold text-white mb-1">{stat.value}</p>
+            <p className={`text-xs font-semibold uppercase tracking-wider ${stat.textColor}`}>{stat.label}</p>
           </motion.div>
         ))}
       </div>
 
-      {/* Users Table */}
-      <div className="bg-white dark:bg-charcoal-light rounded-2xl border border-coffee-100 dark:border-charcoal-200 overflow-hidden">
+      {/* Search & Filter Bar */}
+      <div className="bg-charcoal-light/50 backdrop-blur-md border border-charcoal-200 p-4 rounded-2xl flex flex-col lg:flex-row items-center gap-4 shadow-xl">
+        <div className="relative flex-1 w-full group">
+          <Search size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-coffee-500 group-focus-within:text-accent transition-colors" />
+          <input
+            type="text"
+            placeholder="Cari nama, email, atau ID pengguna..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="w-full pl-12 pr-4 py-3 text-sm bg-charcoal/50 border border-charcoal-200 rounded-xl text-white placeholder:text-coffee-500 focus:outline-none focus:border-accent/50 focus:ring-1 focus:ring-accent/20 transition-all"
+          />
+        </div>
+        <div className="flex items-center gap-3 w-full lg:w-auto">
+          <div className="flex items-center gap-2 px-3 py-1 bg-charcoal/30 rounded-xl border border-charcoal-200">
+            <Filter size={14} className="text-coffee-500" />
+            <select
+              value={roleFilter}
+              onChange={(e) => setRoleFilter(e.target.value as UserRole | "all")}
+              className="bg-transparent py-2 text-sm text-coffee-300 outline-none cursor-pointer"
+            >
+              <option value="all">Semua Role</option>
+              <option value="student">Siswa</option>
+              <option value="mentor">Mentor</option>
+              <option value="superadmin">Super Admin</option>
+            </select>
+          </div>
+          <div className="flex items-center gap-2 px-3 py-1 bg-charcoal/30 rounded-xl border border-charcoal-200">
+            <RefreshCw size={14} className="text-coffee-500" />
+            <select
+              value={statusFilter}
+              onChange={(e) => setStatusFilter(e.target.value as UserStatus | "all")}
+              className="bg-transparent py-2 text-sm text-coffee-300 outline-none cursor-pointer"
+            >
+              <option value="all">Semua Status</option>
+              <option value="active">Aktif</option>
+              <option value="pending">Pending</option>
+              <option value="inactive">Nonaktif</option>
+              <option value="suspended">Suspended</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      {/* Modern Table Container */}
+      <div className="bg-charcoal-light/30 backdrop-blur-sm border border-charcoal-200 rounded-3xl overflow-hidden shadow-2xl">
         <div className="overflow-x-auto">
-          <table className="w-full text-left text-sm whitespace-nowrap">
-            <thead className="bg-coffee-50/50 dark:bg-charcoal-200/50 text-coffee-500 dark:text-coffee-400">
-              <tr>
-                <th className="px-6 py-4 font-medium">Pengguna</th>
-                <th className="px-6 py-4 font-medium">Role</th>
-                <th className="px-6 py-4 font-medium">Status</th>
-                <th className="px-6 py-4 font-medium">Tgl Gabung</th>
-                <th className="px-6 py-4 font-medium">Aksi</th>
+          <table className="w-full text-left text-sm border-collapse">
+            <thead>
+              <tr className="border-b border-charcoal-200 bg-charcoal/40">
+                <th className="px-8 py-5 font-semibold text-coffee-400 uppercase tracking-widest text-[10px]">User Profile</th>
+                <th className="px-6 py-5 font-semibold text-coffee-400 uppercase tracking-widest text-[10px]">Security Role</th>
+                <th className="px-6 py-5 font-semibold text-coffee-400 uppercase tracking-widest text-[10px]">Platform Status</th>
+                <th className="px-6 py-5 font-semibold text-coffee-400 uppercase tracking-widest text-[10px]">Registration</th>
+                <th className="px-8 py-5 font-semibold text-coffee-400 uppercase tracking-widest text-[10px] text-right">Actions</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-coffee-100 dark:divide-charcoal-200">
-              {filteredUsers.map((user) => (
-                <tr key={user.id} className="hover:bg-coffee-50/50 dark:hover:bg-charcoal-200/50 transition-colors text-coffee-700 dark:text-coffee-300">
-                  <td className="px-6 py-4">
-                    <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-full bg-coffee-100 dark:bg-charcoal-300 flex items-center justify-center text-sm font-bold text-coffee-600">
-                        {user.name.charAt(0)}
+            <tbody className="divide-y divide-charcoal-200/50">
+              <AnimatePresence mode="popLayout">
+                {filteredUsers.map((user) => (
+                  <motion.tr 
+                    layout
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0, scale: 0.95 }}
+                    key={user.id} 
+                    className="group hover:bg-white/[0.02] transition-all"
+                  >
+                    <td className="px-8 py-5">
+                      <div className="flex items-center gap-4">
+                        <div className="relative">
+                          <div className={`w-12 h-12 rounded-2xl bg-gradient-to-br flex items-center justify-center text-lg font-bold text-white shadow-lg ${
+                            user.role === 'superadmin' ? 'from-red-500 to-rose-600' :
+                            user.role === 'mentor' ? 'from-blue-500 to-indigo-600' :
+                            'from-coffee-600 to-charcoal-300'
+                          }`}>
+                            {user.name.charAt(0)}
+                          </div>
+                          {user.status === 'active' && (
+                            <div className="absolute -bottom-1 -right-1 w-4 h-4 bg-emerald-500 border-2 border-charcoal rounded-full" />
+                          )}
+                        </div>
+                        <div>
+                          <p className="font-bold text-white group-hover:text-accent transition-colors">{user.name}</p>
+                          <p className="text-xs text-coffee-500 font-medium">{user.email}</p>
+                        </div>
                       </div>
-                      <div>
-                        <p className="font-medium text-coffee-800 dark:text-white">{user.name}</p>
-                        <p className="text-xs text-coffee-500">{user.email}</p>
+                    </td>
+                    <td className="px-6 py-5">
+                      <div className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-[11px] font-bold uppercase tracking-tighter ${
+                        user.role === 'superadmin' ? 'bg-red-500/10 text-red-400 border border-red-500/20' :
+                        user.role === 'mentor' ? 'bg-blue-500/10 text-blue-400 border border-blue-500/20' :
+                        'bg-coffee-500/10 text-coffee-400 border border-coffee-500/20'
+                      }`}>
+                        {user.role === 'superadmin' && <Shield size={12} />}
+                        {user.role === 'mentor' && <Award size={12} />}
+                        {user.role}
                       </div>
-                    </div>
-                  </td>
-                  <td className="px-6 py-4">
-                    <span className={`px-2.5 py-1 text-xs font-medium rounded-md ${
-                      user.role === 'superadmin' ? 'bg-red-100 text-red-700 dark:bg-red-500/20 dark:text-red-300' :
-                      user.role === 'mentor' ? 'bg-blue-100 text-blue-700 dark:bg-blue-500/20 dark:text-blue-300' :
-                      'bg-coffee-100 text-coffee-700 dark:bg-charcoal-300 dark:text-coffee-300'
-                    }`}>
-                      {user.role.charAt(0).toUpperCase() + user.role.slice(1)}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4">
-                    <span className={`flex items-center gap-1.5 ${
-                      user.status === 'active' ? 'text-emerald-600' : 
-                      user.status === 'pending' ? 'text-amber-600' : 
-                      user.status === 'suspended' ? 'text-red-600' : 'text-coffee-500'
-                    }`}>
-                      <div className={`w-1.5 h-1.5 rounded-full ${
-                        user.status === 'active' ? 'bg-emerald-500' : 
-                        user.status === 'pending' ? 'bg-amber-500' : 
-                        user.status === 'suspended' ? 'bg-red-500' : 'bg-coffee-400'
-                      }`} />
-                      {user.status === 'active' ? 'Aktif' : 
-                       user.status === 'pending' ? 'Pending' :
-                       user.status === 'suspended' ? 'Suspended' : 'Nonaktif'}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4 text-coffee-500">
-                    {new Date(user.joinedDate).toLocaleDateString('id-ID', { year: 'numeric', month: 'short', day: 'numeric' })}
-                  </td>
-                  <td className="px-6 py-4">
-                    <div className="flex items-center gap-2">
-                      {user.role === 'mentor' && user.status === 'pending' && (
-                        <>
-                          <button
-                            onClick={() => handleApproveMentor(user.id)}
-                            className="p-1.5 text-emerald-600 hover:bg-emerald-50 rounded-lg transition-colors"
-                            title="Approve Mentor"
-                          >
-                            <UserCheck size={16} />
-                          </button>
-                          <button
-                            onClick={() => handleRejectMentor(user.id)}
-                            className="p-1.5 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
-                            title="Reject Mentor"
-                          >
-                            <XCircle size={16} />
-                          </button>
-                        </>
-                      )}
-                      {user.role !== 'superadmin' && (
+                    </td>
+                    <td className="px-6 py-5">
+                      <div className={`flex items-center gap-2 font-medium ${
+                        user.status === 'active' ? 'text-emerald-400' : 
+                        user.status === 'pending' ? 'text-amber-400' : 
+                        user.status === 'suspended' ? 'text-red-400' : 'text-coffee-500'
+                      }`}>
+                        <div className={`w-2 h-2 rounded-full animate-pulse ${
+                          user.status === 'active' ? 'bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.5)]' : 
+                          user.status === 'pending' ? 'bg-amber-500' : 
+                          user.status === 'suspended' ? 'bg-red-500' : 'bg-coffee-500'
+                        }`} />
+                        <span className="text-xs capitalize">{user.status}</span>
+                      </div>
+                    </td>
+                    <td className="px-6 py-5">
+                      <p className="text-xs text-coffee-400 font-medium">
+                        {new Date(user.joinedDate).toLocaleDateString('id-ID', { year: 'numeric', month: 'long', day: 'numeric' })}
+                      </p>
+                    </td>
+                    <td className="px-8 py-5 text-right">
+                      <div className="flex items-center justify-end gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                         <button
                           onClick={() => handleToggleStatus(user.id, user.status)}
-                          className="p-1.5 text-coffee-500 hover:bg-coffee-50 rounded-lg transition-colors"
-                          title={user.status === 'active' ? 'Deactivate' : 'Activate'}
+                          className="p-2.5 text-coffee-400 hover:text-white hover:bg-white/5 rounded-xl transition-all"
+                          title="Toggle Status"
                         >
-                          <Ban size={16} />
+                          <Ban size={18} />
                         </button>
-                      )}
-                      <button className="p-1.5 text-coffee-500 hover:bg-coffee-50 rounded-lg transition-colors">
-                        <Mail size={16} />
-                      </button>
-                      <button className="p-1.5 text-coffee-400 hover:text-coffee-600">
-                        <MoreVertical size={16} />
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-              ))}
+                        <button 
+                          className="p-2.5 text-coffee-400 hover:text-accent hover:bg-accent/10 rounded-xl transition-all"
+                          title="Message User"
+                        >
+                          <Mail size={18} />
+                        </button>
+                        <button 
+                          onClick={() => { if(confirm('Hapus user ini?')) deleteUser(user.id); }}
+                          className="p-2.5 text-coffee-400 hover:text-red-400 hover:bg-red-400/10 rounded-xl transition-all"
+                          title="Delete User"
+                        >
+                          <Trash2 size={18} />
+                        </button>
+                        <div className="w-px h-4 bg-charcoal-200 mx-1" />
+                        <button className="p-2 text-coffee-400 hover:text-white">
+                          <MoreVertical size={18} />
+                        </button>
+                      </div>
+                    </td>
+                  </motion.tr>
+                ))}
+              </AnimatePresence>
             </tbody>
           </table>
         </div>
 
         {filteredUsers.length === 0 && (
-          <div className="p-12 text-center">
-            <AlertCircle size={40} className="mx-auto text-coffee-300 mb-3" />
-            <p className="text-coffee-500">Tidak ada user yang cocok dengan filter</p>
+          <div className="p-20 text-center bg-charcoal/20">
+            <div className="w-20 h-20 bg-charcoal-light rounded-3xl flex items-center justify-center mx-auto mb-6 border border-charcoal-200">
+              <Search size={32} className="text-coffee-500" />
+            </div>
+            <h3 className="text-lg font-bold text-white mb-2">No users matching your criteria</h3>
+            <p className="text-coffee-500 max-w-xs mx-auto">Try adjusting your filters or search terms to find what you're looking for.</p>
+            <button 
+              onClick={() => { setSearchQuery(""); setRoleFilter("all"); setStatusFilter("all"); }}
+              className="mt-6 px-6 py-2.5 bg-accent/10 text-accent hover:bg-accent/20 rounded-xl font-semibold transition-all"
+            >
+              Clear all filters
+            </button>
           </div>
         )}
       </div>
     </div>
   );
-}
+}

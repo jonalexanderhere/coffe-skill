@@ -14,6 +14,7 @@ export default function CertificatePage() {
   const { user } = useAuth();
   const { getEnrollmentsByUser } = useEnrollmentStore();
   const { getCourseById } = useCourseStore();
+  const [selectedCert, setSelectedCert] = useState<any>(null);
   
   const userEnrollments = user ? getEnrollmentsByUser(user.id) : [];
   const certificates = userEnrollments
