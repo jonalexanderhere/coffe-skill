@@ -156,37 +156,62 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, [user, isLoading, pathname, router]);
 
   const login = async (credentials: LoginCredentials): Promise<boolean> => {
-    await new Promise((resolve) => setTimeout(resolve, 500));
-
-    const foundUser = users.find(
-      (u) => u.email === credentials.email && u.password === credentials.password
-    );
-
-    if (foundUser) {
-      const { password, ...userWithoutPassword } = foundUser;
-      setUser(userWithoutPassword);
-      localStorage.setItem(AUTH_KEY, JSON.stringify(userWithoutPassword));
-
+    setIsLoading(true);
+    try {
       if (isSupabaseConfigured) {
-        await supabase.auth.signInWithPassword({
+        const { data, error } = await supabase.auth.signInWithPassword({
           email: credentials.email,
           password: credentials.password,
         });
+
+        if (error) {
+          console.error("Supabase Login Error:", error.message);
+          return false;
+        }
+
+        if (data.user) {
+          let existingUser = users.find(u => u.email === data.user.email);
+          if (!existingUser) {
+            // This case should ideally be handled by onAuthStateChange, 
+            // but we ensure it here too for robustness
+            const newUser: User = {
+              id: data.user.id,
+              name: data.user.user_metadata.full_name || data.user.email?.split('@')[0] || "User",
+              email: data.user.email || "",
+              role: 'student',
+              status: 'active',
+              joinedDate: new Date().toISOString().split('T')[0],
+            };
+            addUser(newUser);
+            existingUser = newUser;
+          }
+          
+          setUser(existingUser);
+          localStorage.setItem(AUTH_KEY, JSON.stringify(existingUser));
+          return true;
+        }
       }
 
-      switch (userWithoutPassword.role) {
-        case "superadmin":
-          router.push("/superadmin");
-          break;
-        case "mentor":
-          router.push("/mentor");
-          break;
-        default:
-          router.push("/dashboard");
+      // Fallback or Mock Login
+      await new Promise((resolve) => setTimeout(resolve, 500));
+      const foundUser = users.find(
+        (u) => u.email === credentials.email && u.password === credentials.password
+      );
+
+      if (foundUser) {
+        const { password, ...userWithoutPassword } = foundUser;
+        setUser(userWithoutPassword);
+        localStorage.setItem(AUTH_KEY, JSON.stringify(userWithoutPassword));
+        return true;
       }
-      return true;
+      
+      return false;
+    } catch (err) {
+      console.error("Login unexpected error:", err);
+      return false;
+    } finally {
+      setIsLoading(false);
     }
-    return false;
   };
 
   const loginWithGoogle = async () => {

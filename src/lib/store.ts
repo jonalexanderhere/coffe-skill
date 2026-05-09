@@ -23,6 +23,7 @@ export const useUserStore = create<UserStore>()(
           id: 'ghifari-azhar-admin',
           name: 'Ghifari Azhar',
           email: 'fahriazhar148@gmail.com',
+          password: 'CoffeeSkill2026!',
           role: 'superadmin',
           status: 'active',
           joinedDate: new Date().toISOString().split('T')[0]
@@ -31,6 +32,7 @@ export const useUserStore = create<UserStore>()(
           id: 'rico-admin',
           name: 'Rico',
           email: 'rikoiqbal36@gmail.com',
+          password: 'CoffeeSkill2026!',
           role: 'superadmin',
           status: 'active',
           joinedDate: new Date().toISOString().split('T')[0]
@@ -39,6 +41,7 @@ export const useUserStore = create<UserStore>()(
           id: 'mentor-1',
           name: 'Mentor 1',
           email: 'mentor1@coffeeskill.id',
+          password: 'CoffeeSkill2026!',
           role: 'mentor',
           status: 'active',
           joinedDate: new Date().toISOString().split('T')[0]
