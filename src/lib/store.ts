@@ -225,11 +225,11 @@ export const useCourseStore = create<CourseStore>()(
       getCourseById: (id) => get().courses.find((c) => c.id === id),
       getCoursesByMentor: (mentorId) => get().courses.filter((c) => c.mentorId === mentorId),
       getCoursesByStatus: (status) => get().courses.filter((c) => c.status === status),
-      getPublishedCourses: () => get().courses.filter((c) => c.status === 'published'),
+      getPublishedCourses: () => get().courses.filter((c) => c.status === 'published' || c.status === 'approved'),
       approveCourse: (id) =>
         set((state) => ({
           courses: state.courses.map((c) =>
-            c.id === id ? { ...c, status: 'approved' as const } : c
+            c.id === id ? { ...c, status: 'published' as const, publishedAt: new Date().toISOString() } : c
           ),
         })),
       rejectCourse: (id, reason) =>

@@ -166,7 +166,7 @@ export default function MentorCoursesPage() {
                   </span>
                   <div className="flex items-center gap-1">
                     <Link 
-                      href={`/mentor/courses/${course.id}`}
+                      href={`/course/${course.id}`}
                       className="p-2 text-coffee-500 hover:bg-coffee-50 rounded-lg transition-colors"
                     >
                       <Eye size={16} />
