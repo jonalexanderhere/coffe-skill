@@ -35,21 +35,22 @@ export default function CertificatePage() {
     const { default: html2canvas } = await import("html2canvas");
     const { default: jsPDF } = await import("jspdf");
     
-    // We need to render the template invisibly to capture it
+    // We need to render the template to capture it
     const element = document.getElementById(`cert-template-${cert.id}`);
     if (!element) {
-      alert("Template sertifikat tidak ditemukan!");
+      alert("Template sertifikat tidak ditemukan! Sedang menyiapkan...");
       return;
     }
 
     try {
       const canvas = await html2canvas(element, {
-        scale: 2, // Higher quality
+        scale: 3, // Even higher quality for printing
         useCORS: true,
-        backgroundColor: "#0F1115"
+        allowTaint: true,
+        logging: false,
       });
       
-      const imgData = canvas.toDataURL("image/png");
+      const imgData = canvas.toDataURL("image/png", 1.0);
       const pdf = new jsPDF({
         orientation: "landscape",
         unit: "mm",
@@ -59,7 +60,7 @@ export default function CertificatePage() {
       const imgWidth = 297; // A4 Landscape
       const imgHeight = (canvas.height * imgWidth) / canvas.width;
       
-      pdf.addImage(imgData, "PNG", 0, 0, imgWidth, imgHeight);
+      pdf.addImage(imgData, "PNG", 0, 0, imgWidth, imgHeight, undefined, 'FAST');
       pdf.save(`Sertifikat-${cert.course.replace(/\s+/g, "-")}.pdf`);
       
       alert("Sertifikat berhasil diunduh!");
@@ -112,7 +113,8 @@ export default function CertificatePage() {
                         onClick={async (e) => { 
                           e.stopPropagation(); 
                           setSelectedCert(cert);
-                          setTimeout(() => handleDownload(cert), 100);
+                          // Wait for React to render the hidden template
+                          setTimeout(() => handleDownload(cert), 500);
                         }}
                         className="flex-1 flex items-center justify-center gap-1.5 py-2.5 text-xs font-medium text-white bg-accent hover:bg-accent-hover rounded-xl transition-colors"
                       >
@@ -142,9 +144,9 @@ export default function CertificatePage() {
         </div>
 
         {/* Hidden Capture Area */}
-        <div className="fixed -left-[9999px] top-0 opacity-0 pointer-events-none">
+        <div className="fixed -left-[9999px] top-0 opacity-100 pointer-events-none">
           {selectedCert && (
-            <div id={`cert-template-${selectedCert.id}`}>
+            <div>
               <CertificateTemplate
                 recipientName={selectedCert.recipientName}
                 courseName={selectedCert.course}

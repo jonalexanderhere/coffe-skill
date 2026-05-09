@@ -21,10 +21,8 @@ export default function CertificateTemplate({
   grade,
 }: CertificateTemplateProps) {
   return (
-    <motion.div
+    <div
       id={`cert-template-${certificateId}`}
-      initial={{ opacity: 0, scale: 0.95 }}
-      animate={{ opacity: 1, scale: 1 }}
       className="relative w-full max-w-2xl mx-auto"
     >
       {/* Outer decorative frame */}
@@ -32,7 +30,10 @@ export default function CertificateTemplate({
         {/* Inner frame */}
         <div className="relative bg-gradient-to-br from-charcoal via-charcoal-light to-charcoal rounded-xl p-1">
           {/* Certificate content */}
-          <div className="relative bg-gradient-to-br from-charcoal via-coffee-900/50 to-charcoal rounded-lg p-8 lg:p-12 text-center overflow-hidden">
+          <div 
+            className="relative bg-gradient-to-br from-charcoal via-coffee-900/50 to-charcoal rounded-lg p-8 lg:p-12 text-center overflow-hidden"
+            style={{ backgroundColor: '#0F1115' }}
+          >
             {/* Decorative corner elements */}
             <div className="absolute top-0 left-0 w-20 h-20 border-t-2 border-l-2 border-accent/30 rounded-tl-lg" />
             <div className="absolute top-0 right-0 w-20 h-20 border-t-2 border-r-2 border-accent/30 rounded-tr-lg" />
@@ -128,6 +129,6 @@ export default function CertificateTemplate({
           </div>
         </div>
       </div>
-    </motion.div>
+    </div>
   );
 }
