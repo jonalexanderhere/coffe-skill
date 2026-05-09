@@ -47,6 +47,24 @@ export const useUserStore = create<UserStore>()(
           role: 'mentor',
           status: 'active',
           joinedDate: new Date().toISOString().split('T')[0]
+        },
+        {
+          id: 'student-1',
+          name: 'Siswa Demo 1',
+          email: 'student1@coffeeskill.id',
+          password: 'CoffeeSkill2026!',
+          role: 'student',
+          status: 'active',
+          joinedDate: '2026-01-01'
+        },
+        {
+          id: 'student-2',
+          name: 'Siswa Demo 2',
+          email: 'student2@coffeeskill.id',
+          password: 'CoffeeSkill2026!',
+          role: 'student',
+          status: 'active',
+          joinedDate: '2026-01-15'
         }
       ],
       addUser: (user) => set((state) => {
@@ -126,7 +144,54 @@ interface CourseStore {
 export const useCourseStore = create<CourseStore>()(
   persist(
     (set, get) => ({
-      courses: [],
+      courses: [
+        {
+          id: 'course-1',
+          title: 'Ethical Hacking For Beginners',
+          description: 'Pelajari dasar-dasar hacking etis dan keamanan siber.',
+          price: 0,
+          category: 'Cyber Security',
+          level: 'Pemula',
+          mentorId: 'mentor-1',
+          mentorName: 'Mentor 1',
+          thumbnail: 'https://images.unsplash.com/photo-1550751827-4bd374c3f58b?auto=format&fit=crop&q=80&w=800',
+          rating: 4.8,
+          reviewCount: 12,
+          studentCount: 1250,
+          lessons: 24,
+          duration: '12 Jam',
+          status: 'published',
+          publishedAt: '2026-02-01',
+          isFree: true,
+          tags: ['Cyber', 'Security', 'Hacking'],
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+          chapters: []
+        },
+        {
+          id: 'course-2',
+          title: 'Fullstack Web Development with Next.js',
+          description: 'Bangun aplikasi web modern dengan Next.js dan Tailwind CSS.',
+          price: 0,
+          category: 'Web Development',
+          level: 'Menengah',
+          mentorId: 'ghifari-azhar-admin',
+          mentorName: 'Ghifari Azhar',
+          thumbnail: 'https://images.unsplash.com/photo-1618477247222-acbdb0e159b3?auto=format&fit=crop&q=80&w=800',
+          rating: 4.9,
+          reviewCount: 45,
+          studentCount: 3200,
+          lessons: 48,
+          duration: '32 Jam',
+          status: 'published',
+          publishedAt: '2026-03-15',
+          isFree: true,
+          tags: ['Web', 'Development', 'Next.js'],
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+          chapters: []
+        }
+      ],
       addCourse: (course) =>
         set((state) => ({ courses: [...state.courses, course] })),
       updateCourse: (id, updates) =>
@@ -276,7 +341,20 @@ interface EnrollmentStore {
 export const useEnrollmentStore = create<EnrollmentStore>()(
   persist(
     (set, get) => ({
-      enrollments: [],
+      enrollments: [
+        {
+          id: 'enroll-demo-1',
+          userId: 'student-1',
+          courseId: 'course-1',
+          enrolledAt: '2026-02-01',
+          progress: 100,
+          completedChapters: [],
+          completedMaterials: [],
+          certificateIssued: true,
+          certificateId: 'CERT-STU1-COUR1',
+          completedAt: '2026-03-01'
+        }
+      ],
       enrollUser: (userId, courseId) =>
         set((state) => {
           // Prevent duplicate enrollments
@@ -456,7 +534,16 @@ interface CategoryStore {
 export const useCategoryStore = create<CategoryStore>()(
   persist(
     (set, get) => ({
-      categories: [],
+      categories: [
+        { id: 'cat-1', name: 'Cyber Security', icon: 'Shield', color: '#EF4444', courseCount: 0 },
+        { id: 'cat-2', name: 'Web Development', icon: 'Globe', color: '#3B82F6', courseCount: 0 },
+        { id: 'cat-3', name: 'Mobile Dev', icon: 'Smartphone', color: '#10B981', courseCount: 0 },
+        { id: 'cat-4', name: 'Data Science', icon: 'BarChart3', color: '#8B5CF6', courseCount: 0 },
+        { id: 'cat-5', name: 'UI/UX Design', icon: 'Palette', color: '#F59E0B', courseCount: 0 },
+        { id: 'cat-6', name: 'Cloud Computing', icon: 'Cloud', color: '#06B6D4', courseCount: 0 },
+        { id: 'cat-7', name: 'Artificial Intelligence', icon: 'Brain', color: '#EC4899', courseCount: 0 },
+        { id: 'cat-8', name: 'Digital Marketing', icon: 'Settings', color: '#6366F1', courseCount: 0 },
+      ],
       addCategory: (category) => set((state) => ({ categories: [...state.categories, category] })),
       updateCategory: (id, updates) =>
         set((state) => ({

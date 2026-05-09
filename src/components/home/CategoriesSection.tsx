@@ -11,7 +11,7 @@ import {
   Brain,
   Settings,
 } from "lucide-react";
-import { useCategoryStore } from "@/lib/store";
+import { useCategoryStore, useCourseStore } from "@/lib/store";
 import Link from "next/link";
 
 const iconMap: Record<string, React.ElementType> = {
@@ -27,6 +27,7 @@ const iconMap: Record<string, React.ElementType> = {
 
 export default function CategoriesSection() {
   const { categories } = useCategoryStore();
+  const { courses } = useCourseStore();
 
   if (categories.length === 0) {
     return null;
@@ -55,6 +56,8 @@ export default function CategoriesSection() {
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
           {categories.map((cat, i) => {
             const Icon = iconMap[cat.icon] || Globe;
+            const realCourseCount = courses.filter(c => c.category === cat.name && c.status === 'published').length;
+            
             return (
               <motion.div
                 key={cat.id}
@@ -76,7 +79,7 @@ export default function CategoriesSection() {
                   <h3 className="text-sm font-semibold text-coffee-700 dark:text-white mb-1 group-hover:text-accent transition-colors">
                     {cat.name}
                   </h3>
-                  <p className="text-xs text-coffee-400">{cat.courseCount} kursus</p>
+                  <p className="text-xs text-coffee-400">{realCourseCount} kursus</p>
                 </Link>
               </motion.div>
             );
