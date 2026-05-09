@@ -74,16 +74,16 @@ export default function HeroSection() {
             <div className="flex items-center gap-6 text-sm text-coffee-500 dark:text-coffee-400">
               <div className="flex items-center gap-2">
                 <Users size={16} className="text-accent" />
-                <span><strong className="text-coffee-700 dark:text-white">12.5k+</strong> Siswa Aktif</span>
+                <span><strong className="text-coffee-700 dark:text-white">Community</strong> Terbuka</span>
               </div>
               <div className="flex items-center gap-2">
                 <BookOpen size={16} className="text-accent" />
-                <span><strong className="text-coffee-700 dark:text-white">200+</strong> Kursus</span>
+                <span><strong className="text-coffee-700 dark:text-white">Sertifikat</strong> Resmi</span>
               </div>
             </div>
           </motion.div>
 
-          {/* Right: Dashboard Mockup */}
+          {/* Right: Platform Preview */}
           <motion.div
             initial={{ opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
@@ -100,98 +100,34 @@ export default function HeroSection() {
                 </div>
                 <div className="flex-1 mx-4">
                   <div className="mx-auto max-w-xs h-6 bg-coffee-100 dark:bg-charcoal-200 rounded-md flex items-center justify-center">
-                    <span className="text-[10px] text-coffee-400 dark:text-coffee-500 font-medium">coffeeskill.id/dashboard</span>
+                    <span className="text-[10px] text-coffee-400 dark:text-coffee-500 font-medium">coffeeskill.id/explore</span>
                   </div>
                 </div>
               </div>
 
-              {/* Mock dashboard content */}
-              <div className="p-5">
-                {/* Top stats row */}
-                <div className="grid grid-cols-3 gap-3 mb-5">
-                  {[
-                    { label: "Courses", value: "8", icon: BookOpen, color: "text-blue-500" },
-                    { label: "Hours", value: "124", icon: TrendingUp, color: "text-emerald-500" },
-                    { label: "Certificates", value: "4", icon: Award, color: "text-amber-500" },
-                  ].map((stat) => (
-                    <div
-                      key={stat.label}
-                      className="bg-coffee-50 dark:bg-charcoal rounded-xl p-3.5"
-                    >
-                      <stat.icon size={16} className={`${stat.color} mb-2`} />
-                      <p className="text-lg font-bold text-coffee-800 dark:text-white">
-                        {stat.value}
-                      </p>
-                      <p className="text-xs text-coffee-400">{stat.label}</p>
-                    </div>
-                  ))}
+              {/* Mock content placeholder */}
+              <div className="p-8 text-center">
+                <div className="w-16 h-16 bg-accent/10 rounded-2xl flex items-center justify-center mx-auto mb-6">
+                  <Code2 size={32} className="text-accent" />
                 </div>
-
-                {/* Course progress */}
-                <div className="space-y-3">
-                  <p className="text-xs font-semibold text-coffee-600 dark:text-coffee-300">
-                    Continue Learning
-                  </p>
-                  {[
-                    { title: "Next.js Full-Stack", progress: 75, color: "bg-accent" },
-                    { title: "Python Data Science", progress: 45, color: "bg-blue-500" },
-                  ].map((course) => (
-                    <div
-                      key={course.title}
-                      className="flex items-center gap-3 p-3 bg-coffee-50 dark:bg-charcoal rounded-xl"
-                    >
-                      <div className="w-9 h-9 rounded-lg bg-coffee-100 dark:bg-charcoal-200 flex items-center justify-center shrink-0">
-                        <Code2 size={16} className="text-coffee-400" />
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <p className="text-xs font-medium text-coffee-700 dark:text-white truncate">
-                          {course.title}
-                        </p>
-                        <div className="mt-1.5 w-full h-1.5 bg-coffee-100 dark:bg-charcoal-200 rounded-full overflow-hidden">
-                          <div
-                            className={`h-full ${course.color} rounded-full`}
-                            style={{ width: `${course.progress}%` }}
-                          />
-                        </div>
-                      </div>
-                      <span className="text-xs font-medium text-coffee-400 shrink-0">
-                        {course.progress}%
-                      </span>
-                    </div>
-                  ))}
-                </div>
-
-                {/* Mini chart placeholder */}
-                <div className="mt-4 p-3 bg-coffee-50 dark:bg-charcoal rounded-xl">
-                  <p className="text-xs font-semibold text-coffee-600 dark:text-coffee-300 mb-3">
-                    Weekly Activity
-                  </p>
-                  <div className="flex items-end justify-between gap-1.5 h-12">
-                    {[40, 65, 35, 80, 55, 90, 70].map((h, i) => (
-                      <div
-                        key={i}
-                        className="flex-1 bg-accent/20 rounded-sm relative overflow-hidden"
-                        style={{ height: "100%" }}
-                      >
-                        <div
-                          className="absolute bottom-0 left-0 right-0 bg-accent rounded-sm transition-all duration-500"
-                          style={{ height: `${h}%` }}
-                        />
-                      </div>
-                    ))}
+                <h3 className="text-lg font-bold text-coffee-800 dark:text-white mb-2">Siap untuk Belajar?</h3>
+                <p className="text-sm text-coffee-500 dark:text-coffee-400 mb-6">
+                  Akses puluhan materi teknologi terbaru dan kembangkan karir digitalmu sekarang.
+                </p>
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="p-4 bg-coffee-50 dark:bg-charcoal rounded-xl border border-coffee-100 dark:border-charcoal-200">
+                    <BarChart3 size={20} className="text-blue-500 mb-2 mx-auto" />
+                    <p className="text-xs font-semibold text-coffee-700 dark:text-white">Track Progress</p>
                   </div>
-                  <div className="flex justify-between mt-1.5">
-                    {["S", "S", "R", "K", "J", "S", "M"].map((d, i) => (
-                      <span key={i} className="text-[9px] text-coffee-400 flex-1 text-center">
-                        {d}
-                      </span>
-                    ))}
+                  <div className="p-4 bg-coffee-50 dark:bg-charcoal rounded-xl border border-coffee-100 dark:border-charcoal-200">
+                    <Layers size={20} className="text-emerald-500 mb-2 mx-auto" />
+                    <p className="text-xs font-semibold text-coffee-700 dark:text-white">Materi Lengkap</p>
                   </div>
                 </div>
               </div>
             </div>
 
-            {/* Floating notification card */}
+            {/* Floating badge */}
             <motion.div
               initial={{ opacity: 0, x: 20 }}
               animate={{ opacity: 1, x: 0 }}
@@ -202,8 +138,8 @@ export default function HeroSection() {
                 <Award size={16} className="text-emerald-500" />
               </div>
               <div>
-                <p className="text-xs font-semibold text-coffee-700 dark:text-white">Sertifikat Baru!</p>
-                <p className="text-[10px] text-coffee-400">UI/UX Design Mastery</p>
+                <p className="text-xs font-semibold text-coffee-700 dark:text-white">Get Certified</p>
+                <p className="text-[10px] text-coffee-400">Official Certification</p>
               </div>
             </motion.div>
           </motion.div>

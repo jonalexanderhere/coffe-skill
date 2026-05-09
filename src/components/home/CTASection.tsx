@@ -26,7 +26,7 @@ export default function CTASection() {
               Mulai Perjalanan Belajar<br className="hidden sm:block" /> Anda Hari Ini
             </h2>
             <p className="text-coffee-300 text-base sm:text-lg mb-8 max-w-xl mx-auto">
-              Bergabung dengan 12.500+ siswa yang sudah membangun karir digital mereka bersama CoffeeSkill.
+              Bergabung bersama komunitas belajar CoffeeSkill dan mulai bangun karir digitalmu sekarang juga.
             </p>
             <div className="flex flex-wrap justify-center gap-3">
               <Link

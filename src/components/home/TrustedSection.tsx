@@ -8,11 +8,6 @@ interface Partner {
 }
 
 const partners: Partner[] = [
-  { name: "Udemy", shortName: "Udemy" },
-  { name: "CEH - EC-Council", shortName: "CEH" },
-  { name: "CompTIA", shortName: "CompTIA" },
-  { name: "Cisco", shortName: "Cisco" },
-  { name: "TCM Security", shortName: "TCM" },
   { name: "Liwa Technology Excellence Community", shortName: "LTEC" },
 ];
 
