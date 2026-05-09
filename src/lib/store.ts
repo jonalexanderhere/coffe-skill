@@ -91,7 +91,67 @@ interface CourseStore {
 export const useCourseStore = create<CourseStore>()(
   persist(
     (set, get) => ({
-      courses: [],
+      courses: [
+        {
+          id: 'course-1',
+          title: 'Full-Stack Web Development dengan Next.js',
+          description: 'Pelajari cara membangun aplikasi modern yang scalable dengan Next.js, TypeScript, dan Tailwind CSS.',
+          price: 0,
+          originalPrice: 499000,
+          isFree: true,
+          category: 'Development',
+          level: 'Beginner',
+          mentorId: 'mentor-1',
+          mentorName: 'Mentor 1',
+          thumbnail: 'https://i.ibb.co.com/wZ2g7G5w/image.png',
+          rating: 4.8,
+          reviewCount: 120,
+          studentCount: 1500,
+          duration: '12 Jam',
+          lessons: 45,
+          status: 'published',
+          publishedAt: new Date().toISOString(),
+          chapters: [
+            {
+              id: 'ch-1',
+              title: 'Pengenalan Next.js',
+              materials: [
+                { id: 'mat-1', title: 'Apa itu Next.js?', type: 'video', duration: '10:00', isPreview: true },
+                { id: 'mat-2', title: 'Setup Project Pertama', type: 'video', duration: '15:00', isPreview: false }
+              ]
+            }
+          ]
+        },
+        {
+          id: 'course-2',
+          title: 'UI/UX Design Mastery',
+          description: 'Kuasai desain antarmuka dan pengalaman pengguna menggunakan Figma dari dasar hingga mahir.',
+          price: 0,
+          originalPrice: 350000,
+          isFree: true,
+          category: 'Design',
+          level: 'Intermediate',
+          mentorId: 'rico-admin',
+          mentorName: 'Rico',
+          thumbnail: 'https://i.ibb.co.com/GQGdMzYV/Rico.jpg',
+          rating: 4.9,
+          reviewCount: 85,
+          studentCount: 850,
+          duration: '8 Jam',
+          lessons: 30,
+          status: 'published',
+          publishedAt: new Date().toISOString(),
+          chapters: [
+            {
+              id: 'ch-2-1',
+              title: 'Dasar-dasar UI Design',
+              materials: [
+                { id: 'mat-2-1', title: 'Prinsip Desain', type: 'video', duration: '12:00', isPreview: true }
+              ]
+            }
+          ]
+        }
+      ],
       addCourse: (course) => set((state) => ({ courses: [...state.courses, course] })),
       updateCourse: (id, updates) =>
         set((state) => ({

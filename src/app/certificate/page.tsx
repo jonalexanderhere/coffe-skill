@@ -7,7 +7,7 @@ import Link from "next/link";
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
 import CertificateTemplate from "@/components/shared/CertificateTemplate";
-import { useAuth } from "@/lib/auth-context";
+import { useAuth, ProtectedRoute } from "@/lib/auth-context";
 import { useEnrollmentStore, useCourseStore } from "@/lib/store";
 
 export default function CertificatePage() {
@@ -30,10 +30,16 @@ export default function CertificatePage() {
       };
     });
 
-  const [selectedCert, setSelectedCert] = useState<typeof certificates[0] | null>(null);
+  const handleDownload = (certName: string) => {
+    alert(`Mengunduh sertifikat: ${certName}...`);
+    // In a real app, we would use a library like html2canvas or generate a PDF server-side
+    setTimeout(() => {
+      alert("Sertifikat berhasil diunduh!");
+    }, 2000);
+  };
 
   return (
-    <>
+    <ProtectedRoute allowedRoles={["student", "mentor", "superadmin"]}>
       <Navbar />
       <main className="pt-24 pb-16 min-h-screen bg-charcoal">
         <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -72,7 +78,10 @@ export default function CertificatePage() {
                     </div>
                     <div className="flex gap-2">
                       <button 
-                        onClick={(e) => { e.stopPropagation(); }}
+                        onClick={(e) => { 
+                          e.stopPropagation(); 
+                          handleDownload(cert.course);
+                        }}
                         className="flex-1 flex items-center justify-center gap-1.5 py-2.5 text-xs font-medium text-white bg-accent hover:bg-accent-hover rounded-xl transition-colors"
                       >
                         <Download size={14} /> Download
@@ -132,7 +141,10 @@ export default function CertificatePage() {
                 grade={selectedCert.grade}
               />
               <div className="flex justify-center gap-3 mt-6">
-                <button className="flex items-center gap-2 px-6 py-3 text-sm font-medium text-white bg-accent hover:bg-accent-hover rounded-xl transition-colors">
+                <button 
+                  onClick={() => handleDownload(selectedCert.course)}
+                  className="flex items-center gap-2 px-6 py-3 text-sm font-medium text-white bg-accent hover:bg-accent-hover rounded-xl transition-colors"
+                >
                   <Download size={16} /> Download Certificate
                 </button>
                 <button className="flex items-center gap-2 px-6 py-3 text-sm font-medium text-white bg-charcoal-light border border-charcoal-200 hover:bg-charcoal-200 rounded-xl transition-colors">
@@ -145,6 +157,6 @@ export default function CertificatePage() {
       </AnimatePresence>
 
       <Footer />
-    </>
+    </ProtectedRoute>
   );
 }

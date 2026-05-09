@@ -1,12 +1,13 @@
 "use client";
 
 import { useState } from "react";
-import { useParams } from "next/navigation";
+import { useRouter, useParams } from "next/navigation";
 import { motion } from "framer-motion";
 import Link from "next/link";
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
-import { useCourseStore } from "@/lib/store";
+import { useCourseStore, useEnrollmentStore } from "@/lib/store";
+import { useAuth } from "@/lib/auth-context";
 import { formatCurrency } from "@/lib/utils";
 import {
   Star,
@@ -64,12 +65,16 @@ const curriculum = [
 ];
 
 export default function CourseDetailPage() {
+  const router = useRouter();
   const params = useParams();
   const [activeTab, setActiveTab] = useState("Overview");
   const [expandedModule, setExpandedModule] = useState<number | null>(0);
+  const { user } = useAuth();
   const { getCourseById } = useCourseStore();
+  const { enrollUser, isUserEnrolled } = useEnrollmentStore();
 
   const course = getCourseById(params.id as string);
+  const isEnrolled = user && course ? isUserEnrolled(user.id, course.id) : false;
 
   if (!course) {
     return (
@@ -327,8 +332,23 @@ export default function CourseDetailPage() {
                   )}
                 </div>
 
-                <button className="w-full py-3 text-sm font-semibold text-white bg-accent hover:bg-accent-hover rounded-xl transition-colors mb-3">
-                  {course.isFree ? "Daftar Gratis" : "Beli Kursus"}
+                <button 
+                  onClick={async () => {
+                    if (!user) {
+                      router.push("/login");
+                      return;
+                    }
+                    if (course.isFree) {
+                      enrollUser(user.id, course.id);
+                      alert("Berhasil terdaftar di kursus!");
+                      router.push("/dashboard/courses");
+                    } else {
+                      alert("Sistem pembayaran sedang dalam pemeliharaan (Maintenance). Silakan coba kursus gratis.");
+                    }
+                  }}
+                  className="w-full py-3 text-sm font-semibold text-white bg-accent hover:bg-accent-hover rounded-xl transition-colors mb-3"
+                >
+                  {isEnrolled ? "Lanjutkan Belajar" : course.isFree ? "Daftar Gratis" : "Beli Kursus"}
                 </button>
                 <button className="w-full py-3 text-sm font-semibold text-coffee-700 dark:text-coffee-200 border border-coffee-200 dark:border-charcoal-200 hover:bg-coffee-50 dark:hover:bg-charcoal-200 rounded-xl transition-colors mb-5">
                   Tambah ke Wishlist
