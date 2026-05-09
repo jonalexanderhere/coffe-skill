@@ -2,9 +2,15 @@
 
 import { motion } from "framer-motion";
 import { Star, Quote } from "lucide-react";
-import { testimonials } from "@/lib/mock-data";
+import { useTestimonialStore } from "@/lib/store";
 
 export default function TestimonialSection() {
+  const { testimonials } = useTestimonialStore();
+
+  if (testimonials.length === 0) {
+    return null;
+  }
+
   return (
     <section className="py-20 lg:py-24 bg-coffee-50/50 dark:bg-surface-dark">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">

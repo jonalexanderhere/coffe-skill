@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-import { User, Course, Enrollment, Category, PlatformSettings, Quiz, QuizQuestion, Chapter, Material } from './types';
+import { User, Course, Enrollment, Category, PlatformSettings, Quiz, QuizQuestion, Chapter, Material, Event, Testimonial, FAQ, TeamMember } from './types';
 
 // ============================
 // User Store
@@ -18,64 +18,7 @@ interface UserStore {
 export const useUserStore = create<UserStore>()(
   persist(
     (set, get) => ({
-      users: [
-        {
-          id: 'admin-1',
-          name: 'Super Admin',
-          email: 'admin@coffeeskill.id',
-          password: 'admin123',
-          role: 'superadmin',
-          status: 'active',
-          joinedDate: '2024-01-01',
-        },
-        {
-          id: 'mentor-1',
-          name: 'Ahmad Fauzan',
-          email: 'mentor@coffeeskill.id',
-          password: 'mentor123',
-          role: 'mentor',
-          status: 'active',
-          bio: 'Senior Full-Stack Developer with 10+ years experience',
-          joinedDate: '2024-06-15',
-        },
-        {
-          id: 'mentor-2',
-          name: 'Sari Dewi',
-          email: 'sari@coffeeskill.id',
-          password: 'mentor123',
-          role: 'mentor',
-          status: 'pending',
-          bio: 'Data Scientist & AI Researcher',
-          joinedDate: '2025-03-10',
-        },
-        {
-          id: 'student-1',
-          name: 'Ghifari Azhar',
-          email: 'student@coffeeskill.id',
-          password: 'student123',
-          role: 'student',
-          status: 'active',
-          joinedDate: '2025-01-15',
-        },
-        {
-          id: 'student-2',
-          name: 'Andi Wijaya',
-          email: 'andi@email.com',
-          password: 'student123',
-          role: 'student',
-          status: 'active',
-          joinedDate: '2025-03-10',
-        },
-        {
-          id: 'student-3',
-          name: 'Maya Putri',
-          email: 'maya@email.com',
-          password: 'student123',
-          role: 'student',
-          status: 'active',
-          joinedDate: '2025-05-22',
-        },
-      ],
+      users: [],
       addUser: (user) => set((state) => ({ users: [...state.users, user] })),
       updateUser: (id, updates) =>
         set((state) => ({
@@ -120,78 +63,7 @@ interface CourseStore {
 export const useCourseStore = create<CourseStore>()(
   persist(
     (set, get) => ({
-      courses: [
-        {
-          id: 'course-1',
-          mentorId: 'mentor-1',
-          mentorName: 'Ahmad Fauzan',
-          title: 'Full-Stack Web Development dengan Next.js',
-          description: 'Pelajari cara membangun aplikasi web modern full-stack menggunakan Next.js, React, dan TypeScript dari dasar hingga production.',
-          shortDescription: 'Kuasai Next.js dari dasar hingga production-ready app',
-          category: 'Web Development',
-          level: 'Menengah',
-          price: 299000,
-          originalPrice: 599000,
-          isFree: false,
-          status: 'published',
-          rating: 4.9,
-          reviewCount: 342,
-          studentCount: 2840,
-          duration: '24 jam',
-          lessons: 128,
-          tags: ['Next.js', 'React', 'TypeScript'],
-          chapters: [
-            {
-              id: 'ch-1',
-              courseId: 'course-1',
-              title: 'Pengenalan Next.js',
-              order: 1,
-              isPublished: true,
-              materials: [
-                {
-                  id: 'mat-1',
-                  chapterId: 'ch-1',
-                  courseId: 'course-1',
-                  type: 'video',
-                  title: 'Apa itu Next.js?',
-                  description: 'Pengenalan konsep Next.js dan alasan mengapa memilih Next.js',
-                  content: 'https://youtube.com/watch?v=example1',
-                  duration: '15 menit',
-                  order: 1,
-                  isPreview: true,
-                  isPublished: true,
-                  createdAt: '2025-01-01',
-                  updatedAt: '2025-01-01',
-                },
-              ],
-            },
-          ],
-          createdAt: '2025-01-01',
-          updatedAt: '2025-01-15',
-          publishedAt: '2025-01-16',
-        },
-        {
-          id: 'course-2',
-          mentorId: 'mentor-2',
-          mentorName: 'Sari Dewi',
-          title: 'Python untuk Data Science & AI',
-          description: 'Kuasai Python untuk analisis data, machine learning, dan artificial intelligence dengan proyek-proyek nyata.',
-          category: 'Data Science',
-          level: 'Pemula',
-          price: 349000,
-          isFree: false,
-          status: 'pending_review',
-          rating: 0,
-          reviewCount: 0,
-          studentCount: 0,
-          duration: '32 jam',
-          lessons: 156,
-          tags: ['Python', 'Data Science', 'AI'],
-          chapters: [],
-          createdAt: '2025-04-20',
-          updatedAt: '2025-05-01',
-        },
-      ],
+      courses: [],
       addCourse: (course) => set((state) => ({ courses: [...state.courses, course] })),
       updateCourse: (id, updates) =>
         set((state) => ({
@@ -322,19 +194,7 @@ interface EnrollmentStore {
 export const useEnrollmentStore = create<EnrollmentStore>()(
   persist(
     (set, get) => ({
-      enrollments: [
-        {
-          id: 'enroll-1',
-          userId: 'student-1',
-          courseId: 'course-1',
-          enrolledAt: '2025-02-01',
-          progress: 75,
-          lastAccessedAt: '2026-05-05',
-          completedChapters: ['ch-1'],
-          completedMaterials: ['mat-1'],
-          certificateIssued: false,
-        },
-      ],
+      enrollments: [],
       enrollUser: (userId, courseId) =>
         set((state) => {
           // Prevent duplicate enrollments
@@ -462,16 +322,7 @@ interface CategoryStore {
 export const useCategoryStore = create<CategoryStore>()(
   persist(
     (set, get) => ({
-      categories: [
-        { id: '1', name: 'Web Development', icon: 'Globe', courseCount: 42, color: '#3B82F6' },
-        { id: '2', name: 'Mobile Development', icon: 'Smartphone', courseCount: 28, color: '#8B5CF6' },
-        { id: '3', name: 'Data Science', icon: 'BarChart3', courseCount: 35, color: '#10B981' },
-        { id: '4', name: 'UI/UX Design', icon: 'Palette', courseCount: 24, color: '#F59E0B' },
-        { id: '5', name: 'Cloud Computing', icon: 'Cloud', courseCount: 18, color: '#06B6D4' },
-        { id: '6', name: 'Cyber Security', icon: 'Shield', courseCount: 15, color: '#EF4444' },
-        { id: '7', name: 'AI & Machine Learning', icon: 'Brain', courseCount: 31, color: '#EC4899' },
-        { id: '8', name: 'DevOps', icon: 'Settings', courseCount: 12, color: '#6366F1' },
-      ],
+      categories: [],
       addCategory: (category) => set((state) => ({ categories: [...state.categories, category] })),
       updateCategory: (id, updates) =>
         set((state) => ({
@@ -481,6 +332,74 @@ export const useCategoryStore = create<CategoryStore>()(
         set((state) => ({ categories: state.categories.filter((c) => c.id !== id) })),
     }),
     { name: 'coffeeskill-categories' }
+  )
+);
+
+// ============================
+// Event Store
+// ============================
+interface EventStore {
+  events: Event[];
+  addEvent: (event: Event) => void;
+  updateEvent: (id: string, updates: Partial<Event>) => void;
+  deleteEvent: (id: string) => void;
+}
+
+export const useEventStore = create<EventStore>()(
+  persist(
+    (set) => ({
+      events: [],
+      addEvent: (event) => set((state) => ({ events: [...state.events, event] })),
+      updateEvent: (id, updates) =>
+        set((state) => ({
+          events: state.events.map((e) => (e.id === id ? { ...e, ...updates } : e)),
+        })),
+      deleteEvent: (id) =>
+        set((state) => ({ events: state.events.filter((e) => e.id !== id) })),
+    }),
+    { name: 'coffeeskill-events' }
+  )
+);
+
+// ============================
+// Testimonial Store
+// ============================
+interface TestimonialStore {
+  testimonials: Testimonial[];
+  addTestimonial: (testimonial: Testimonial) => void;
+  deleteTestimonial: (id: string) => void;
+}
+
+export const useTestimonialStore = create<TestimonialStore>()(
+  persist(
+    (set) => ({
+      testimonials: [],
+      addTestimonial: (testimonial) => set((state) => ({ testimonials: [...state.testimonials, testimonial] })),
+      deleteTestimonial: (id) =>
+        set((state) => ({ testimonials: state.testimonials.filter((t) => t.id !== id) })),
+    }),
+    { name: 'coffeeskill-testimonials' }
+  )
+);
+
+// ============================
+// FAQ Store
+// ============================
+interface FAQStore {
+  faqs: FAQ[];
+  addFAQ: (faq: FAQ) => void;
+  deleteFAQ: (question: string) => void;
+}
+
+export const useFAQStore = create<FAQStore>()(
+  persist(
+    (set) => ({
+      faqs: [],
+      addFAQ: (faq) => set((state) => ({ faqs: [...state.faqs, faq] })),
+      deleteFAQ: (question) =>
+        set((state) => ({ faqs: state.faqs.filter((f) => f.question !== question) })),
+    }),
+    { name: 'coffeeskill-faqs' }
   )
 );
 
@@ -507,5 +426,45 @@ export const useSettingsStore = create<SettingsStore>()(
         set((state) => ({ settings: { ...state.settings, ...updates } })),
     }),
     { name: 'coffeeskill-settings' }
+  )
+);
+
+// ============================
+// Team Store
+// ============================
+interface TeamStore {
+  teamMembers: TeamMember[];
+  addTeamMember: (member: TeamMember) => void;
+  deleteTeamMember: (id: string) => void;
+}
+
+export const useTeamStore = create<TeamStore>()(
+  persist(
+    (set) => ({
+      teamMembers: [
+        {
+          id: 'ghifari-azhar',
+          name: 'Ghifari Azhar',
+          email: 'ghifari@coffeeskill.id',
+          role: 'Developer',
+          avatar: 'https://github.com/ghifariazhar.png',
+          github: 'ghifariazhar',
+          bio: 'Passionate developer dan founder di CoffeeSkill. Membangun platform pembelajaran teknologi terdepan dari Lampung Barat.'
+        },
+        {
+          id: 'rico',
+          name: 'Rico',
+          email: 'rico@coffeeskill.id',
+          role: 'Developer',
+          avatar: 'https://github.com/rico.png',
+          github: 'rico',
+          bio: 'Core developer at CoffeeSkill.'
+        }
+      ],
+      addTeamMember: (member) => set((state) => ({ teamMembers: [...state.teamMembers, member] })),
+      deleteTeamMember: (id) =>
+        set((state) => ({ teamMembers: state.teamMembers.filter((t) => t.id !== id) })),
+    }),
+    { name: 'coffeeskill-team' }
   )
 );

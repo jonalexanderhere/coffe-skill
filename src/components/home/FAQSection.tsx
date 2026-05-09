@@ -2,11 +2,16 @@
 
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { ChevronDown } from "lucide-react";
-import { faqs } from "@/lib/mock-data";
+import { ChevronDown, HelpCircle } from "lucide-react";
+import { useFAQStore } from "@/lib/store";
 
 export default function FAQSection() {
   const [openIndex, setOpenIndex] = useState<number | null>(0);
+  const { faqs } = useFAQStore();
+
+  if (faqs.length === 0) {
+    return null; // Don't show the section if no FAQs
+  }
 
   return (
     <section id="faq" className="py-20 lg:py-24">

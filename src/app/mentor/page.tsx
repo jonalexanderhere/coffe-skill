@@ -2,7 +2,7 @@
 
 import { motion } from "framer-motion";
 import { Users, BookOpen, DollarSign, Star, ArrowUpRight, Plus, Video, Play, TrendingUp, FileText, Bell } from "lucide-react";
-import { mentorDashboard } from "@/lib/mock-data";
+
 import { formatCurrency } from "@/lib/utils";
 import Link from "next/link";
 import { useAuth } from "@/lib/auth-context";

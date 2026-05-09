@@ -2,7 +2,7 @@
 
 import { motion } from "framer-motion";
 import { Calendar, Clock, Users, ArrowRight, Video, Wrench, MapPin } from "lucide-react";
-import { events } from "@/lib/mock-data";
+import { useEventStore } from "@/lib/store";
 import Link from "next/link";
 
 const typeConfig = {
@@ -12,6 +12,12 @@ const typeConfig = {
 };
 
 export default function EventSection() {
+  const { events } = useEventStore();
+
+  if (events.length === 0) {
+    return null;
+  }
+
   return (
     <section className="py-20 lg:py-24">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">

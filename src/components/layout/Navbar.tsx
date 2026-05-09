@@ -61,6 +61,9 @@ export default function Navbar() {
               >
                 Coffee<span className="text-accent">Skill</span>
               </span>
+              <span className="px-1.5 py-0.5 text-[8px] font-bold text-accent bg-accent/10 border border-accent/20 rounded-md">
+                BETA
+              </span>
             </Link>
 
             {/* Desktop Nav */}

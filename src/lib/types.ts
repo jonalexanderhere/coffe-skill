@@ -201,3 +201,41 @@ export interface RegisterData {
   password: string;
   role: 'student' | 'mentor';
 }
+
+export interface Event {
+  id: string;
+  title: string;
+  description: string;
+  date: string;
+  time: string;
+  speaker: string;
+  speakerRole: string;
+  type: 'webinar' | 'workshop' | 'meetup';
+  attendees: number;
+  isUpcoming: boolean;
+  thumbnail: string;
+}
+
+export interface Testimonial {
+  id: string;
+  name: string;
+  role: string;
+  avatar: string;
+  content: string;
+  rating: number;
+}
+
+export interface FAQ {
+  question: string;
+  answer: string;
+}
+
+export interface TeamMember {
+  id: string;
+  name: string;
+  email: string;
+  role: string;
+  avatar: string;
+  github: string;
+  bio?: string;
+}

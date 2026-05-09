@@ -3,7 +3,7 @@
 import { motion, useInView } from "framer-motion";
 import { useRef, useEffect, useState } from "react";
 import { Users, BookOpen, Award, GraduationCap } from "lucide-react";
-import { platformStats } from "@/lib/mock-data";
+import { useUserStore, useCourseStore, useEnrollmentStore } from "@/lib/store";
 
 function AnimatedCounter({ end, suffix = "" }: { end: number; suffix?: string }) {
   const [count, setCount] = useState(0);
@@ -38,42 +38,51 @@ function AnimatedCounter({ end, suffix = "" }: { end: number; suffix?: string })
   );
 }
 
-const stats = [
-  {
-    label: "Siswa Aktif",
-    value: platformStats.students,
-    suffix: "+",
-    icon: Users,
-    color: "text-blue-500",
-    bg: "bg-blue-50 dark:bg-blue-500/10",
-  },
-  {
-    label: "Kursus Tersedia",
-    value: platformStats.courses,
-    suffix: "+",
-    icon: BookOpen,
-    color: "text-accent",
-    bg: "bg-accent-light dark:bg-accent/10",
-  },
-  {
-    label: "Mentor Expert",
-    value: platformStats.mentors,
-    suffix: "+",
-    icon: GraduationCap,
-    color: "text-emerald-500",
-    bg: "bg-emerald-50 dark:bg-emerald-500/10",
-  },
-  {
-    label: "Sertifikat Diterbitkan",
-    value: platformStats.certificates,
-    suffix: "+",
-    icon: Award,
-    color: "text-amber-500",
-    bg: "bg-amber-50 dark:bg-amber-500/10",
-  },
-];
-
 export default function StatsSection() {
+  const { users } = useUserStore();
+  const { courses } = useCourseStore();
+  const { enrollments } = useEnrollmentStore();
+
+  const studentCount = users.filter(u => u.role === 'student').length;
+  const courseCount = courses.filter(c => c.status === 'published').length;
+  const mentorCount = users.filter(u => u.role === 'mentor').length;
+  const certificateCount = enrollments.filter(e => e.certificateIssued).length;
+
+  const stats = [
+    {
+      label: "Siswa Aktif",
+      value: studentCount,
+      suffix: "+",
+      icon: Users,
+      color: "text-blue-500",
+      bg: "bg-blue-50 dark:bg-blue-500/10",
+    },
+    {
+      label: "Kursus Tersedia",
+      value: courseCount,
+      suffix: "+",
+      icon: BookOpen,
+      color: "text-accent",
+      bg: "bg-accent-light dark:bg-accent/10",
+    },
+    {
+      label: "Mentor Expert",
+      value: mentorCount,
+      suffix: "+",
+      icon: GraduationCap,
+      color: "text-emerald-500",
+      bg: "bg-emerald-50 dark:bg-emerald-500/10",
+    },
+    {
+      label: "Sertifikat Diterbitkan",
+      value: certificateCount,
+      suffix: "+",
+      icon: Award,
+      color: "text-amber-500",
+      bg: "bg-amber-50 dark:bg-amber-500/10",
+    },
+  ];
+
   return (
     <section className="py-20 lg:py-24">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">

@@ -2,10 +2,27 @@
 
 import { motion } from "framer-motion";
 import { Users, BookOpen, DollarSign, Activity, ArrowUpRight, Search, Filter, MoreVertical } from "lucide-react";
-import { adminStats, adminUsers } from "@/lib/mock-data";
+import { useUserStore, useCourseStore, useEnrollmentStore } from "@/lib/store";
 import { formatCurrency } from "@/lib/utils";
 
 export default function AdminDashboardPage() {
+  const { users } = useUserStore();
+  const { courses } = useCourseStore();
+  const { enrollments } = useEnrollmentStore();
+
+  const totalUsers = users.length;
+  const totalCourses = courses.length;
+  const activeUsers = users.filter(u => u.status === 'active').length;
+  // Simplified revenue calculation for demo
+  const totalRevenue = enrollments.length * 250000; 
+
+  const stats = [
+    { label: "Total Users", value: totalUsers.toLocaleString(), icon: Users, color: "text-blue-500", trend: "+0%" },
+    { label: "Total Kursus", value: totalCourses.toLocaleString(), icon: BookOpen, color: "text-emerald-500", trend: "+0%" },
+    { label: "Total Pendapatan", value: formatCurrency(totalRevenue), icon: DollarSign, color: "text-accent", trend: "+0%" },
+    { label: "Active Users", value: activeUsers.toLocaleString(), icon: Activity, color: "text-purple-500", trend: "+0%" },
+  ];
+
   return (
     <div className="max-w-6xl mx-auto space-y-6">
       <div className="flex items-center justify-between mb-2">
@@ -24,12 +41,7 @@ export default function AdminDashboardPage() {
 
       {/* Stats Grid */}
       <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        {[
-          { label: "Total Users", value: adminStats.totalUsers.toLocaleString(), icon: Users, color: "text-blue-500", trend: "+12%" },
-          { label: "Total Kursus", value: adminStats.totalCourses, icon: BookOpen, color: "text-emerald-500", trend: "+3%" },
-          { label: "Total Pendapatan", value: formatCurrency(adminStats.totalRevenue), icon: DollarSign, color: "text-accent", trend: "+24%" },
-          { label: "Active Users", value: adminStats.activeUsers.toLocaleString(), icon: Activity, color: "text-purple-500", trend: "+8%" },
-        ].map((stat, i) => (
+        {stats.map((stat, i) => (
           <motion.div
             key={stat.label}
             initial={{ opacity: 0, y: 10 }}
@@ -79,43 +91,53 @@ export default function AdminDashboardPage() {
               </tr>
             </thead>
             <tbody className="divide-y divide-coffee-100 dark:divide-charcoal-200">
-              {adminUsers.map((user) => (
-                <tr key={user.id} className="hover:bg-coffee-50/50 dark:hover:bg-charcoal-200/50 transition-colors text-coffee-700 dark:text-coffee-300">
-                  <td className="px-6 py-4">
-                    <div className="flex items-center gap-3">
-                      <div className="w-8 h-8 rounded-full bg-coffee-100 dark:bg-charcoal-300 flex items-center justify-center text-xs font-bold text-coffee-600">
-                        {user.name.charAt(0)}
+              {users.map((user) => {
+                const userEnrollments = enrollments.filter(e => e.userId === user.id).length;
+                return (
+                  <tr key={user.id} className="hover:bg-coffee-50/50 dark:hover:bg-charcoal-200/50 transition-colors text-coffee-700 dark:text-coffee-300">
+                    <td className="px-6 py-4">
+                      <div className="flex items-center gap-3">
+                        <div className="w-8 h-8 rounded-full bg-coffee-100 dark:bg-charcoal-300 flex items-center justify-center text-xs font-bold text-coffee-600">
+                          {user.name.charAt(0)}
+                        </div>
+                        <div>
+                          <p className="font-medium text-coffee-800 dark:text-white">{user.name}</p>
+                          <p className="text-xs text-coffee-500">{user.email}</p>
+                        </div>
                       </div>
-                      <div>
-                        <p className="font-medium text-coffee-800 dark:text-white">{user.name}</p>
-                        <p className="text-xs text-coffee-500">{user.email}</p>
-                      </div>
-                    </div>
-                  </td>
-                  <td className="px-6 py-4">
-                    <span className={`px-2.5 py-1 text-xs font-medium rounded-md ${
-                      user.role === 'admin' ? 'bg-purple-100 text-purple-700 dark:bg-purple-500/20 dark:text-purple-300' :
-                      user.role === 'mentor' ? 'bg-blue-100 text-blue-700 dark:bg-blue-500/20 dark:text-blue-300' :
-                      'bg-coffee-100 text-coffee-700 dark:bg-charcoal-300 dark:text-coffee-300'
-                    }`}>
-                      {user.role.charAt(0).toUpperCase() + user.role.slice(1)}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4">
-                    <span className={`flex items-center gap-1.5 ${user.status === 'active' ? 'text-emerald-600' : 'text-red-500'}`}>
-                      <div className={`w-1.5 h-1.5 rounded-full ${user.status === 'active' ? 'bg-emerald-500' : 'bg-red-500'}`} />
-                      {user.status === 'active' ? 'Aktif' : 'Nonaktif'}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4 text-coffee-500">{new Date(user.joinDate).toLocaleDateString('id-ID', { year: 'numeric', month: 'short', day: 'numeric' })}</td>
-                  <td className="px-6 py-4">{user.coursesEnrolled}</td>
-                  <td className="px-6 py-4">
-                    <button className="text-coffee-400 hover:text-coffee-600">
-                      <MoreVertical size={16} />
-                    </button>
+                    </td>
+                    <td className="px-6 py-4">
+                      <span className={`px-2.5 py-1 text-xs font-medium rounded-md ${
+                        user.role === 'superadmin' ? 'bg-purple-100 text-purple-700 dark:bg-purple-500/20 dark:text-purple-300' :
+                        user.role === 'mentor' ? 'bg-blue-100 text-blue-700 dark:bg-blue-500/20 dark:text-blue-300' :
+                        'bg-coffee-100 text-coffee-700 dark:bg-charcoal-300 dark:text-coffee-300'
+                      }`}>
+                        {user.role.charAt(0).toUpperCase() + user.role.slice(1)}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4">
+                      <span className={`flex items-center gap-1.5 ${user.status === 'active' ? 'text-emerald-600' : 'text-red-500'}`}>
+                        <div className={`w-1.5 h-1.5 rounded-full ${user.status === 'active' ? 'bg-emerald-500' : 'bg-red-500'}`} />
+                        {user.status === 'active' ? 'Aktif' : 'Nonaktif'}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4 text-coffee-500">{new Date(user.joinedDate).toLocaleDateString('id-ID', { year: 'numeric', month: 'short', day: 'numeric' })}</td>
+                    <td className="px-6 py-4">{userEnrollments}</td>
+                    <td className="px-6 py-4">
+                      <button className="text-coffee-400 hover:text-coffee-600">
+                        <MoreVertical size={16} />
+                      </button>
+                    </td>
+                  </tr>
+                );
+              })}
+              {users.length === 0 && (
+                <tr>
+                  <td colSpan={6} className="px-6 py-10 text-center text-coffee-400">
+                    Belum ada pengguna.
                   </td>
                 </tr>
-              ))}
+              )}
             </tbody>
           </table>
         </div>

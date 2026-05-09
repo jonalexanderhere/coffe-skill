@@ -11,7 +11,7 @@ import {
   Brain,
   Settings,
 } from "lucide-react";
-import { categories } from "@/lib/mock-data";
+import { useCategoryStore } from "@/lib/store";
 import Link from "next/link";
 
 const iconMap: Record<string, React.ElementType> = {
@@ -26,6 +26,12 @@ const iconMap: Record<string, React.ElementType> = {
 };
 
 export default function CategoriesSection() {
+  const { categories } = useCategoryStore();
+
+  if (categories.length === 0) {
+    return null;
+  }
+
   return (
     <section className="py-20 lg:py-24 bg-coffee-50/50 dark:bg-surface-dark">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">

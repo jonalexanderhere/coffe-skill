@@ -141,8 +141,7 @@ export default function Footer() {
             <div className="text-sm text-coffee-400 text-center md:text-left">
               <p>&copy; {new Date().getFullYear()} CoffeeSkill. All rights reserved.</p>
               <p className="mt-1 text-coffee-500 text-xs">
-                Production by <span className="text-coffee-300">Ghifari Azhar</span> · Powered by{" "}
-                <span className="text-coffee-300">LTEC (Liwa Technology Excellence Community)</span>
+                Powered by <span className="text-coffee-300">LTEC (Liwa Technology Excellence Community)</span>
               </p>
             </div>
             <div className="flex items-center gap-4 text-xs text-coffee-500">

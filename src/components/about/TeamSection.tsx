@@ -4,9 +4,15 @@ import { motion } from "framer-motion";
 import { Mail, ExternalLink } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
-import { teamMembers } from "@/lib/mock-data";
+import { useTeamStore } from "@/lib/store";
 
 export default function TeamSection() {
+  const { teamMembers } = useTeamStore();
+
+  if (teamMembers.length === 0) {
+    return null;
+  }
+
   return (
     <section className="mb-20">
       <motion.div
