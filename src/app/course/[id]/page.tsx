@@ -6,7 +6,7 @@ import { motion } from "framer-motion";
 import Link from "next/link";
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
-import { useCourseStore, useEnrollmentStore } from "@/lib/store";
+import { useCourseStore, useEnrollmentStore, useUserStore } from "@/lib/store";
 import { useAuth } from "@/lib/auth-context";
 import { formatCurrency } from "@/lib/utils";
 import {
@@ -39,6 +39,7 @@ export default function CourseDetailPage() {
   const [isSharing, setIsSharing] = useState(false);
   
   const { user } = useAuth();
+  const { toggleWishlist } = useUserStore();
   const { getCourseById, addReview } = useCourseStore();
   const { enrollUser, isUserEnrolled } = useEnrollmentStore();
 
@@ -46,6 +47,16 @@ export default function CourseDetailPage() {
     navigator.clipboard.writeText(window.location.href);
     setIsSharing(true);
     setTimeout(() => setIsSharing(false), 2000);
+  };
+
+  const isWishlisted = user?.wishlist?.includes(params.id as string);
+
+  const handleToggleWishlist = () => {
+    if (!user) {
+      router.push("/login");
+      return;
+    }
+    toggleWishlist(user.id, params.id as string);
   };
 
   const course = getCourseById(params.id as string);
@@ -275,6 +286,45 @@ export default function CourseDetailPage() {
                     </div>
                   )}
 
+                  {activeTab === "Review" && (
+                    <div className="space-y-6">
+                      {course.reviews && course.reviews.length > 0 ? (
+                        <div className="grid gap-4">
+                          {course.reviews.map((review, i) => (
+                            <div key={i} className="p-5 bg-coffee-50 dark:bg-charcoal rounded-2xl border border-coffee-100 dark:border-charcoal-200">
+                              <div className="flex items-center justify-between mb-3">
+                                <div className="flex items-center gap-3">
+                                  <div className="w-10 h-10 rounded-full bg-accent/10 flex items-center justify-center text-accent font-bold">
+                                    {review.userName.charAt(0)}
+                                  </div>
+                                  <div>
+                                    <p className="text-sm font-bold text-coffee-800 dark:text-white">{review.userName}</p>
+                                    <div className="flex gap-0.5 mt-0.5">
+                                      {[...Array(5)].map((_, i) => (
+                                        <Star key={i} size={10} className={i < review.rating ? "text-amber-400 fill-amber-400" : "text-coffee-200"} />
+                                      ))}
+                                    </div>
+                                  </div>
+                                </div>
+                                <span className="text-[10px] text-coffee-400">
+                                  {new Date(review.date).toLocaleDateString('id-ID')}
+                                </span>
+                              </div>
+                              <p className="text-sm text-coffee-600 dark:text-coffee-300 leading-relaxed">
+                                {review.comment}
+                              </p>
+                            </div>
+                          ))}
+                        </div>
+                      ) : (
+                        <div className="text-center py-10">
+                          <Star size={32} className="mx-auto text-coffee-200 dark:text-charcoal-300 mb-3" />
+                          <p className="text-sm text-coffee-500 dark:text-coffee-400">Belum ada ulasan untuk kursus ini</p>
+                        </div>
+                      )}
+                    </div>
+                  )}
+
                   {activeTab === "Diskusi" && (
                     <div className="text-center py-10">
                       <MessageCircle size={32} className="mx-auto text-coffee-200 dark:text-charcoal-300 mb-3" />
@@ -325,8 +375,15 @@ export default function CourseDetailPage() {
                 >
                   {isEnrolled ? "Lanjutkan Belajar" : course.isFree ? "Daftar Gratis" : "Beli Kursus"}
                 </button>
-                <button className="w-full py-3 text-sm font-semibold text-coffee-700 dark:text-coffee-200 border border-coffee-200 dark:border-charcoal-200 hover:bg-coffee-50 dark:hover:bg-charcoal-200 rounded-xl transition-colors mb-5">
-                  Tambah ke Wishlist
+                <button 
+                  onClick={handleToggleWishlist}
+                  className={`w-full py-3 text-sm font-semibold border rounded-xl transition-colors mb-5 ${
+                    isWishlisted 
+                      ? "bg-accent/10 border-accent text-accent" 
+                      : "text-coffee-700 dark:text-coffee-200 border-coffee-200 dark:border-charcoal-200 hover:bg-coffee-50 dark:hover:bg-charcoal-200"
+                  }`}
+                >
+                  {isWishlisted ? "Hapus dari Wishlist" : "Tambah ke Wishlist"}
                 </button>
 
                 <div className="space-y-3 text-sm">
@@ -346,8 +403,13 @@ export default function CourseDetailPage() {
                 </div>
 
                 <div className="mt-5 pt-5 border-t border-coffee-100 dark:border-charcoal-200 flex gap-2">
-                  <button className="flex-1 py-2 text-xs font-medium text-coffee-500 dark:text-coffee-400 hover:text-coffee-700 dark:hover:text-white border border-coffee-100 dark:border-charcoal-200 rounded-lg flex items-center justify-center gap-1.5 transition-colors">
-                    <Heart size={14} /> Wishlist
+                  <button 
+                    onClick={handleToggleWishlist}
+                    className={`flex-1 py-2 text-xs font-medium border rounded-lg flex items-center justify-center gap-1.5 transition-colors ${
+                      isWishlisted ? "text-accent border-accent/30 bg-accent/5" : "text-coffee-500 dark:text-coffee-400 border-coffee-100 dark:border-charcoal-200 hover:text-coffee-700 dark:hover:text-white"
+                    }`}
+                  >
+                    <Heart size={14} className={isWishlisted ? "fill-accent" : ""} /> Wishlist
                   </button>
                   <button 
                     onClick={handleShare}

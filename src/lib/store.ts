@@ -13,6 +13,7 @@ interface UserStore {
   getUserById: (id: string) => User | undefined;
   getUsersByRole: (role: User['role']) => User[];
   updateUserStatus: (id: string, status: User['status']) => void;
+  toggleWishlist: (userId: string, courseId: string) => void;
   deleteDuplicateUsers: () => void;
 }
 
@@ -65,6 +66,22 @@ export const useUserStore = create<UserStore>()(
         set((state) => ({
           users: state.users.map((u) => (u.id === id ? { ...u, status } : u)),
         })),
+      toggleWishlist: (userId, courseId) =>
+        set((state) => ({
+          users: state.users.map((u) => {
+            if (u.id === userId) {
+              const wishlist = u.wishlist || [];
+              const exists = wishlist.includes(courseId);
+              return {
+                ...u,
+                wishlist: exists 
+                  ? wishlist.filter(id => id !== courseId) 
+                  : [...wishlist, courseId]
+              };
+            }
+            return u;
+          }),
+        })),
       deleteDuplicateUsers: () => set((state) => {
         const seen = new Set();
         const uniqueUsers = state.users.filter(u => {
@@ -94,7 +111,7 @@ interface CourseStore {
   approveCourse: (id: string) => void;
   rejectCourse: (id: string, reason: string) => void;
   publishCourse: (id: string) => void;
-  addReview: (courseId: string, review: { rating: number; comment: string }) => void;
+  addReview: (courseId: string, review: { userId: string; userName: string; rating: number; comment: string }) => void;
   addChapter: (courseId: string, chapter: Chapter) => void;
   updateChapter: (courseId: string, chapterId: string, updates: Partial<Chapter>) => void;
   deleteChapter: (courseId: string, chapterId: string) => void;
@@ -106,117 +123,9 @@ interface CourseStore {
 export const useCourseStore = create<CourseStore>()(
   persist(
     (set, get) => ({
-      courses: [
-        {
-          id: 'course-1',
-          title: 'Full-Stack Web Development dengan Next.js',
-          description: 'Pelajari cara membangun aplikasi modern yang scalable dengan Next.js, TypeScript, dan Tailwind CSS.',
-          price: 0,
-          originalPrice: 499000,
-          isFree: true,
-          category: 'Development',
-          level: 'Pemula',
-          mentorId: 'mentor-1',
-          mentorName: 'Mentor 1',
-          thumbnail: 'https://i.ibb.co.com/wZ2g7G5w/image.png',
-          rating: 4.8,
-          reviewCount: 120,
-          studentCount: 1500,
-          duration: '12 Jam',
-          lessons: 45,
-          status: 'published',
-          tags: ['Next.js', 'React', 'TypeScript'],
-          createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString(),
-          chapters: [
-            {
-              id: 'ch-1',
-              courseId: 'course-1',
-              title: 'Pengenalan Next.js',
-              order: 1,
-              isPublished: true,
-              materials: [
-                { 
-                  id: 'mat-1', 
-                  chapterId: 'ch-1', 
-                  courseId: 'course-1', 
-                  title: 'Apa itu Next.js?', 
-                  type: 'video', 
-                  content: 'https://youtube.com/watch?v=1', 
-                  duration: '10:00', 
-                  order: 1, 
-                  isPreview: true, 
-                  isPublished: true, 
-                  createdAt: new Date().toISOString(), 
-                  updatedAt: new Date().toISOString() 
-                },
-                { 
-                  id: 'mat-2', 
-                  chapterId: 'ch-1', 
-                  courseId: 'course-1', 
-                  title: 'Setup Project Pertama', 
-                  type: 'video', 
-                  content: 'https://youtube.com/watch?v=2', 
-                  duration: '15:00', 
-                  order: 2, 
-                  isPreview: false, 
-                  isPublished: true, 
-                  createdAt: new Date().toISOString(), 
-                  updatedAt: new Date().toISOString() 
-                }
-              ]
-            }
-          ]
-        },
-        {
-          id: 'course-2',
-          title: 'UI/UX Design Mastery',
-          description: 'Kuasai desain antarmuka dan pengalaman pengguna menggunakan Figma dari dasar hingga mahir.',
-          price: 0,
-          originalPrice: 350000,
-          isFree: true,
-          category: 'Design',
-          level: 'Menengah',
-          mentorId: 'rico-admin',
-          mentorName: 'Rico',
-          thumbnail: 'https://i.ibb.co.com/GQGdMzYV/Rico.jpg',
-          rating: 4.9,
-          reviewCount: 85,
-          studentCount: 850,
-          duration: '8 Jam',
-          lessons: 30,
-          status: 'published',
-          tags: ['Design', 'Figma', 'UI/UX'],
-          createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString(),
-          chapters: [
-            {
-              id: 'ch-2-1',
-              courseId: 'course-2',
-              title: 'Dasar-dasar UI Design',
-              order: 1,
-              isPublished: true,
-              materials: [
-                { 
-                  id: 'mat-2-1', 
-                  chapterId: 'ch-2-1', 
-                  courseId: 'course-2', 
-                  title: 'Prinsip Desain', 
-                  type: 'video', 
-                  content: 'https://youtube.com/watch?v=3', 
-                  duration: '12:00', 
-                  order: 1, 
-                  isPreview: true, 
-                  isPublished: true, 
-                  createdAt: new Date().toISOString(), 
-                  updatedAt: new Date().toISOString() 
-                }
-              ]
-            }
-          ]
-        }
-      ],
-      addCourse: (course) => set((state) => ({ courses: [...state.courses, course] })),
+      courses: [],
+      addCourse: (course) =>
+        set((state) => ({ courses: [...state.courses, course] })),
       updateCourse: (id, updates) =>
         set((state) => ({
           courses: state.courses.map((c) => (c.id === id ? { ...c, ...updates } : c)),
@@ -249,12 +158,14 @@ export const useCourseStore = create<CourseStore>()(
         set((state) => ({
           courses: state.courses.map((c) => {
             if (c.id === courseId) {
-              const newReviews = c.rating * c.reviewCount + review.rating;
-              const newCount = c.reviewCount + 1;
+              const newReviewsCount = c.reviewCount + 1;
+              const newRating = Number(((c.rating * c.reviewCount + review.rating) / newReviewsCount).toFixed(1));
+              const currentReviews = c.reviews || [];
               return {
                 ...c,
-                rating: Number((newReviews / newCount).toFixed(1)),
-                reviewCount: newCount,
+                rating: newRating,
+                reviewCount: newReviewsCount,
+                reviews: [...currentReviews, { ...review, date: new Date().toISOString() }]
               };
             }
             return c;
@@ -402,17 +313,26 @@ export const useEnrollmentStore = create<EnrollmentStore>()(
                 ? e.completedMaterials 
                 : [...e.completedMaterials, completedMaterialId];
               
-              const progress = totalMaterials > 0 
-                ? Math.round((newCompleted.length / totalMaterials) * 100) 
-                : 0;
+                const progress = totalMaterials > 0 
+                  ? Math.round((newCompleted.length / totalMaterials) * 100) 
+                  : 0;
+                  
+                const isComplete = progress >= 100;
                 
-              const isComplete = progress >= 100;
-              
-              return {
-                ...e,
-                completedMaterials: newCompleted,
-                progress,
-                certificateIssued: isComplete ? true : e.certificateIssued,
+                // Track daily activity
+                const today = new Date().toISOString().split('T')[0];
+                const dailyActivity = e.dailyActivity || [];
+                const dayEntry = dailyActivity.find(d => d.date === today);
+                const newDailyActivity = dayEntry
+                  ? dailyActivity.map(d => d.date === today ? { ...d, count: d.count + 1 } : d)
+                  : [...dailyActivity, { date: today, count: 1 }];
+
+                return {
+                  ...e,
+                  completedMaterials: newCompleted,
+                  progress,
+                  dailyActivity: newDailyActivity,
+                  certificateIssued: isComplete ? true : e.certificateIssued,
                 certificateId: isComplete && !e.certificateId ? `CERT-${userId.substring(0, 4)}-${courseId.substring(0, 4)}` : e.certificateId,
                 completedAt: isComplete && !e.completedAt ? new Date().toISOString() : e.completedAt,
                 lastAccessedAt: new Date().toISOString().split('T')[0],
@@ -676,6 +596,8 @@ interface DraftCourseStore {
     isFree: boolean;
     thumbnail: string;
     tags: string[];
+    reviews?: { userId: string; userName: string; rating: number; comment: string; date: string }[];
+    createdAt: string;
   };
   chapters: any[];
   setStep: (step: number) => void;
@@ -697,7 +619,8 @@ export const useDraftCourseStore = create<DraftCourseStore>()(
         price: 0,
         isFree: false,
         thumbnail: "",
-        tags: []
+        tags: [],
+        createdAt: ""
       },
       chapters: [],
       setStep: (step) => set({ currentStep: step }),
@@ -716,7 +639,8 @@ export const useDraftCourseStore = create<DraftCourseStore>()(
           price: 0,
           isFree: false,
           thumbnail: "",
-          tags: []
+          tags: [],
+          createdAt: ""
         },
         chapters: []
       })

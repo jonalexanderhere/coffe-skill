@@ -22,7 +22,8 @@ import {
   Star,
   Download,
   ExternalLink,
-  FileDigit
+  FileDigit,
+  Share2
 } from "lucide-react";
 import { useCourseStore, useEnrollmentStore } from "@/lib/store";
 import { useAuth } from "@/lib/auth-context";
@@ -41,12 +42,15 @@ export default function CourseLearnPage() {
   const [showRatingModal, setShowRatingModal] = useState(false);
   const [rating, setRating] = useState(5);
   const [reviewText, setReviewText] = useState("");
-  const [isReviewed, setIsReviewed] = useState(false);
 
   const courseId = params.id as string;
   const course = getCourseById(courseId);
   const { addReview: submitReview } = useCourseStore();
   const enrollment = user ? getEnrollment(user.id, courseId) : null;
+
+  // Check if already reviewed
+  const userReview = course?.reviews?.find(r => r.userId === user?.id);
+  const [isReviewed, setIsReviewed] = useState(!!userReview);
 
   // Initial setup
   useEffect(() => {
@@ -62,17 +66,27 @@ export default function CourseLearnPage() {
 
   // Show rating modal when 100%
   useEffect(() => {
-    if (enrollment?.progress === 100 && !isReviewed) {
+    if (enrollment?.progress === 100 && !isReviewed && !userReview) {
       setShowRatingModal(true);
     }
-  }, [enrollment?.progress]);
+  }, [enrollment?.progress, isReviewed, userReview]);
 
   const handleRate = () => {
-    if (course) {
-      submitReview(course.id, { rating, comment: reviewText });
+    if (course && user) {
+      submitReview(course.id, { 
+        userId: user.id, 
+        userName: user.name || "Anonymous", 
+        rating, 
+        comment: reviewText 
+      });
       setIsReviewed(true);
       setShowRatingModal(false);
     }
+  };
+
+  const handleShare = () => {
+    navigator.clipboard.writeText(window.location.origin + `/course/${courseId}`);
+    alert("Link kursus berhasil disalin!");
   };
 
   if (!course || !enrollment) {
@@ -241,7 +255,7 @@ export default function CourseLearnPage() {
           </div>
 
           <div className="flex items-center gap-2">
-            {enrollment.progress === 100 && (
+            {enrollment.progress === 100 && isReviewed && (
               <Link
                 href="/certificate"
                 className="flex items-center gap-2 px-3 py-1.5 bg-emerald-500 text-white text-[10px] font-bold rounded-lg hover:bg-emerald-600 transition-all animate-bounce shadow-lg shadow-emerald-500/20"
@@ -249,6 +263,12 @@ export default function CourseLearnPage() {
                 <Download size={14} /> DOWNLOAD SERTIFIKAT
               </Link>
             )}
+            <button 
+              onClick={handleShare}
+              className="p-2 text-coffee-400 hover:text-coffee-600 dark:hover:text-white"
+            >
+              <Share2 size={18} />
+            </button>
             <button className="p-2 text-coffee-400 hover:text-coffee-600 dark:hover:text-white">
               <MessageSquare size={18} />
             </button>

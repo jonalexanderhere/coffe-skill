@@ -17,6 +17,7 @@ export interface User {
   status: UserStatus;
   avatar?: string;
   bio?: string;
+  wishlist?: string[];
   joinedDate: string;
   lastLogin?: string;
 }
@@ -41,6 +42,7 @@ export interface Course {
   duration: string;
   lessons: number;
   tags: string[];
+  reviews?: { userId: string; userName: string; rating: number; comment: string; date: string }[];
   chapters: Chapter[];
   createdAt: string;
   updatedAt: string;
@@ -128,6 +130,7 @@ export interface Enrollment {
   completedMaterials: string[];
   certificateIssued: boolean;
   certificateId?: string;
+  dailyActivity?: { date: string; count: number }[];
 }
 
 export interface Review {

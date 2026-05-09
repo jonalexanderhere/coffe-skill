@@ -58,6 +58,29 @@ export default function DashboardPage() {
     { name: "Sertifikat Pertama", description: "Selesaikan satu kursus penuh", unlocked: stats.certificates > 0 },
   ];
 
+  // Calculate Weekly Activity from real dailyActivity log
+  const getWeeklyActivity = () => {
+    const days = ["Sen", "Sel", "Rab", "Kam", "Jum", "Sab", "Min"];
+    const today = new Date();
+    const last7Days = Array.from({ length: 7 }, (_, i) => {
+      const d = new Date();
+      d.setDate(today.getDate() - (6 - i));
+      return d.toISOString().split('T')[0];
+    });
+
+    return last7Days.map((dateStr, i) => {
+      const dayName = days[new Date(dateStr).getDay() === 0 ? 6 : new Date(dateStr).getDay() - 1];
+      let totalCompletions = 0;
+      userEnrollments.forEach(e => {
+        const dayData = e.dailyActivity?.find(d => d.date === dateStr);
+        if (dayData) totalCompletions += dayData.count;
+      });
+      return { day: dayName, hours: totalCompletions * 0.5 }; // Assume 0.5 hours per material
+    });
+  };
+
+  const weeklyActivityData = getWeeklyActivity();
+
   return (
     <div className="max-w-6xl mx-auto space-y-6">
       {/* Welcome */}
@@ -159,20 +182,12 @@ export default function DashboardPage() {
           <div className="bg-white dark:bg-charcoal-light rounded-2xl border border-coffee-100 dark:border-charcoal-200 p-5">
             <h3 className="text-sm font-semibold text-coffee-700 dark:text-white mb-4">Aktivitas Mingguan</h3>
             <div className="flex items-end justify-between gap-2 h-32">
-              {[
-                { day: "Sen", hours: userEnrollments.length > 0 ? 1.5 : 0 },
-                { day: "Sel", hours: userEnrollments.length > 0 ? 0.5 : 0 },
-                { day: "Rab", hours: userEnrollments.length > 0 ? 2.0 : 0 },
-                { day: "Kam", hours: userEnrollments.length > 0 ? 1.0 : 0 },
-                { day: "Jum", hours: userEnrollments.length > 0 ? 3.5 : 0 },
-                { day: "Sab", hours: userEnrollments.length > 0 ? 4.0 : 0 },
-                { day: "Min", hours: userEnrollments.length > 0 ? 2.5 : 0 },
-              ].map((item) => (
+              {weeklyActivityData.map((item) => (
                 <div key={item.day} className="flex-1 flex flex-col items-center gap-2">
                   <div className="w-full relative" style={{ height: "100px" }}>
                     <div
                       className="absolute bottom-0 left-1/2 -translate-x-1/2 w-7 bg-accent/15 rounded-md hover:bg-accent/30 transition-colors"
-                      style={{ height: `${item.hours > 0 ? (item.hours / 6) * 100 : 5}%` }}
+                      style={{ height: `${item.hours > 0 ? Math.min((item.hours / 6) * 100, 100) : 5}%` }}
                     >
                       {item.hours > 0 && (
                         <div
