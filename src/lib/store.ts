@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-import { User, Course, Enrollment, Category, PlatformSettings, Quiz, QuizQuestion, Chapter, Material, Event, Testimonial, FAQ, TeamMember, AuditLog, SystemHealth, CourseLevel } from './types';
+import { User, Course, Enrollment, Category, PlatformSettings, Quiz, QuizQuestion, Chapter, Material, Event, Testimonial, FAQ, TeamMember, AuditLog, TrafficLog, SystemHealth, CourseLevel } from './types';
 
 // ============================
 // User Store
@@ -654,8 +654,10 @@ export const useDraftCourseStore = create<DraftCourseStore>()(
 // ============================
 interface SystemStore {
   logs: AuditLog[];
+  trafficLogs: TrafficLog[];
   health: SystemHealth;
   addLog: (log: Omit<AuditLog, 'id' | 'timestamp'>) => void;
+  addTrafficLog: (log: Omit<TrafficLog, 'id' | 'timestamp'>) => void;
   updateHealth: (updates: Partial<SystemHealth>) => void;
   clearLogs: () => void;
 }
@@ -695,6 +697,10 @@ export const useSystemStore = create<SystemStore>()(
           severity: 'high'
         }
       ],
+      trafficLogs: [
+        { id: 'tf-1', timestamp: new Date().toISOString(), ip: '182.1.44.12', method: 'GET', path: '/api/courses', status: 200, latency: 45, userAgent: 'Mozilla/5.0...', action: 'allow' },
+        { id: 'tf-2', timestamp: new Date().toISOString(), ip: '45.122.1.9', method: 'POST', path: '/api/admin/settings', status: 403, latency: 12, userAgent: 'Python-requests...', action: 'block' },
+      ],
       health: {
         cpuUsage: 12.5,
         memoryUsage: 450,
@@ -705,7 +711,12 @@ export const useSystemStore = create<SystemStore>()(
         threatLevel: 'low',
         blockedIps: 124,
         totalTraffic: 154000,
-        p75ResponseTime: 120
+        p75ResponseTime: 120,
+        trafficHistory: Array.from({ length: 24 }, (_, i) => ({
+          time: `${i}:00`,
+          allowed: Math.floor(Math.random() * 1000) + 500,
+          blocked: Math.floor(Math.random() * 50)
+        }))
       },
       addLog: (log) => set((state) => ({
         logs: [
@@ -715,12 +726,22 @@ export const useSystemStore = create<SystemStore>()(
             timestamp: new Date().toISOString()
           },
           ...state.logs
-        ].slice(0, 500) // Keep last 500 logs
+        ].slice(0, 500)
+      })),
+      addTrafficLog: (log) => set((state) => ({
+        trafficLogs: [
+          {
+            ...log,
+            id: `tf-${Date.now()}`,
+            timestamp: new Date().toISOString()
+          },
+          ...state.trafficLogs
+        ].slice(0, 1000)
       })),
       updateHealth: (updates) => set((state) => ({
         health: { ...state.health, ...updates }
       })),
-      clearLogs: () => set({ logs: [] })
+      clearLogs: () => set({ logs: [], trafficLogs: [] })
     }),
     { name: 'coffeeskill-system' }
   )

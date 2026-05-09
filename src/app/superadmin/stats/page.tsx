@@ -25,13 +25,14 @@ import {
   Users,
   TrendingUp,
   ArrowUpRight,
-  ArrowDownRight
+  ArrowDownRight,
+  BookOpen
 } from "lucide-react";
 import { useSystemStore, useUserStore, useEnrollmentStore } from "@/lib/store";
 import { AuditLog } from "@/lib/types";
 
 export default function PlatformStatsPage() {
-  const { logs, health, updateHealth, clearLogs } = useSystemStore();
+  const { logs, trafficLogs, health, updateHealth, addTrafficLog, clearLogs } = useSystemStore();
   const { users, deleteDuplicateUsers } = useUserStore();
   const { enrollments, deleteDuplicateEnrollments } = useEnrollmentStore();
   
@@ -39,16 +40,37 @@ export default function PlatformStatsPage() {
   const [isCleaning, setIsCleaning] = useState(false);
   const [filterCategory, setFilterCategory] = useState<AuditLog['category'] | 'all'>('all');
 
+  // Simulate real-time traffic
+  useEffect(() => {
+    const paths = ['/', '/explore', '/course/1', '/api/auth', '/dashboard', '/superadmin/stats'];
+    const ips = ['182.1.44.12', '45.122.1.9', '192.168.1.1', '10.0.0.1', '172.16.0.1'];
+    
+    const interval = setInterval(() => {
+      const isSuspicious = Math.random() > 0.9;
+      addTrafficLog({
+        ip: ips[Math.floor(Math.random() * ips.length)],
+        method: Math.random() > 0.8 ? 'POST' : 'GET',
+        path: paths[Math.floor(Math.random() * paths.length)],
+        status: isSuspicious ? 403 : 200,
+        latency: Math.floor(Math.random() * 200) + 20,
+        userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36...',
+        action: isSuspicious ? 'block' : 'allow'
+      });
+    }, 5000);
+    return () => clearInterval(interval);
+  }, [addTrafficLog]);
+
   // Simulate real-time health updates
   useEffect(() => {
     const interval = setInterval(() => {
       updateHealth({
         cpuUsage: Math.max(5, Math.min(95, health.cpuUsage + (Math.random() - 0.5) * 5)),
-        activeRequests: Math.max(10, Math.min(200, health.activeRequests + Math.floor((Math.random() - 0.5) * 10)))
+        activeRequests: Math.max(10, Math.min(200, health.activeRequests + Math.floor((Math.random() - 0.5) * 10))),
+        totalTraffic: health.totalTraffic + Math.floor(Math.random() * 100)
       });
     }, 3000);
     return () => clearInterval(interval);
-  }, [health.cpuUsage, health.activeRequests, updateHealth]);
+  }, [health.cpuUsage, health.activeRequests, health.totalTraffic, updateHealth]);
 
   const handleFullCleanup = async () => {
     setIsCleaning(true);
@@ -186,15 +208,6 @@ export default function PlatformStatsPage() {
                         <motion.div initial={{ width: 0 }} animate={{ width: '62%' }} className="h-full bg-blue-500" />
                       </div>
                     </div>
-                    <div>
-                      <div className="flex items-center justify-between text-xs font-bold mb-2">
-                        <span className="text-coffee-400 uppercase tracking-wider">Duplicate Records</span>
-                        <span className="text-red-400">Detected</span>
-                      </div>
-                      <div className="h-2 bg-charcoal rounded-full overflow-hidden border border-white/5">
-                        <motion.div initial={{ width: 0 }} animate={{ width: '15%' }} className="h-full bg-red-500" />
-                      </div>
-                    </div>
                   </div>
                 </div>
 
@@ -206,6 +219,43 @@ export default function PlatformStatsPage() {
                   <RefreshCw size={18} className={isCleaning ? "animate-spin" : ""} />
                   {isCleaning ? "Cleaning Registry..." : "Optimize Platform Registry"}
                 </button>
+              </div>
+            </div>
+
+            {/* Recent Audit Events */}
+            <div className="bg-charcoal-light/30 border border-charcoal-200 rounded-3xl p-8 backdrop-blur-md">
+              <div className="flex items-center justify-between mb-8">
+                <div>
+                  <h3 className="text-xl font-bold text-white">Recent Platform Activity</h3>
+                  <p className="text-sm text-coffee-500">Live feed of authentication and content events</p>
+                </div>
+                <button onClick={() => setActiveTab('logs')} className="text-xs font-bold text-accent uppercase tracking-widest hover:underline">
+                  View All Logs
+                </button>
+              </div>
+              <div className="space-y-4">
+                {logs.slice(0, 5).map((log) => (
+                  <div key={log.id} className="flex items-center justify-between p-4 bg-charcoal/30 rounded-2xl border border-white/5 group hover:bg-charcoal/50 transition-all">
+                    <div className="flex items-center gap-4">
+                      <div className={`p-2.5 rounded-xl ${
+                        log.category === 'auth' ? 'bg-blue-500/10 text-blue-400' :
+                        log.category === 'content' ? 'bg-emerald-500/10 text-emerald-400' :
+                        'bg-amber-500/10 text-amber-400'
+                      }`}>
+                        {log.category === 'auth' ? <Users size={18} /> : 
+                         log.category === 'content' ? <BookOpen size={18} /> : <Shield size={18} />}
+                      </div>
+                      <div>
+                        <p className="text-sm font-bold text-white group-hover:text-accent transition-colors">{log.action}</p>
+                        <p className="text-xs text-coffee-500">{log.details}</p>
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      <p className="text-[10px] font-bold text-coffee-600 uppercase">{new Date(log.timestamp).toLocaleTimeString()}</p>
+                      <p className="text-[10px] text-coffee-700">{log.ipAddress}</p>
+                    </div>
+                  </div>
+                ))}
               </div>
             </div>
           </motion.div>
@@ -236,10 +286,11 @@ export default function PlatformStatsPage() {
                   className="bg-charcoal/50 border border-charcoal-200 rounded-xl px-4 py-2.5 text-sm text-coffee-300 outline-none"
                 >
                   <option value="all">All Categories</option>
-                  <option value="security">Security</option>
-                  <option value="auth">Auth</option>
-                  <option value="system">System</option>
-                  <option value="content">Content</option>
+                  <option value="security">🛡️ Security</option>
+                  <option value="auth">🔑 Auth / Login</option>
+                  <option value="system">⚙️ System</option>
+                  <option value="content">📝 Content / Kursus</option>
+                  <option value="traffic">🌐 Traffic</option>
                 </select>
               </div>
               <button onClick={clearLogs} className="flex items-center gap-2 text-xs font-bold text-red-400 hover:text-red-300 transition-colors uppercase tracking-widest px-4">
@@ -267,19 +318,28 @@ export default function PlatformStatsPage() {
                       {filteredLogs.map((log) => (
                         <tr key={log.id} className="hover:bg-white/[0.02] transition-colors group">
                           <td className="px-6 py-4 whitespace-nowrap text-coffee-600 w-48">
-                            {new Date(log.timestamp).toLocaleString('id-ID', { hour12: false })}
+                            {new Date(log.timestamp).toLocaleString('id-ID')}
                           </td>
                           <td className="px-6 py-4">
                             <span className={`inline-flex items-center gap-1.5 px-2 py-0.5 rounded-md text-[10px] font-bold uppercase tracking-tight ${
-                              log.severity === 'critical' || log.severity === 'high' ? 'bg-red-500/10 text-red-400' :
-                              log.severity === 'medium' ? 'bg-amber-500/10 text-amber-400' :
-                              'bg-blue-500/10 text-blue-400'
+                              log.category === 'security' ? 'bg-red-500/10 text-red-400' :
+                              log.category === 'auth' ? 'bg-blue-500/10 text-blue-400' :
+                              log.category === 'content' ? 'bg-emerald-500/10 text-emerald-400' :
+                              'bg-gray-500/10 text-gray-400'
                             }`}>
                               {log.action}
                             </span>
                           </td>
-                          <td className="px-6 py-4 text-coffee-300">
-                            {log.details}
+                          <td className="px-6 py-4">
+                            <div className="text-coffee-300 line-clamp-1 max-w-md">{log.details}</div>
+                          </td>
+                          <td className="px-6 py-4">
+                            <span className={`px-2 py-1 rounded text-[10px] font-bold uppercase ${
+                              log.status === 'success' ? 'text-emerald-500' : 
+                              log.status === 'failure' ? 'text-red-500' : 'text-amber-500'
+                            }`}>
+                              {log.status}
+                            </span>
                           </td>
                           <td className="px-6 py-4 text-coffee-500 text-right font-bold text-[10px]">
                             {log.ipAddress}
@@ -379,14 +439,53 @@ export default function PlatformStatsPage() {
               </div>
             </div>
 
-            {/* Suspicious Traffic Map Placeholder */}
-            <div className="bg-charcoal-light/30 border border-charcoal-200 rounded-3xl p-8 backdrop-blur-md h-96 flex flex-col items-center justify-center text-center relative overflow-hidden group">
-              <div className="absolute inset-0 opacity-10 group-hover:opacity-20 transition-opacity">
-                <Globe size={400} className="absolute -top-20 -right-20 text-coffee-500" />
+            {/* Live Firewall Monitor */}
+            <div className="bg-charcoal-light/30 border border-charcoal-200 rounded-3xl overflow-hidden backdrop-blur-md">
+              <div className="p-6 border-b border-charcoal-200 flex items-center justify-between">
+                <div>
+                  <h3 className="text-xl font-bold text-white">Live Firewall Monitor</h3>
+                  <p className="text-sm text-coffee-500">Real-time ingress filtering stream</p>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="w-2 h-2 rounded-full bg-emerald-500 animate-ping" />
+                  <span className="text-[10px] font-bold text-emerald-500 uppercase tracking-widest">Intercepting</span>
+                </div>
               </div>
-              <Shield size={48} className="text-coffee-700 mb-4" />
-              <h3 className="text-xl font-bold text-white mb-2">Global Access Monitoring</h3>
-              <p className="text-sm text-coffee-500 max-w-sm">Interactive access map is being optimized for your region. All global ingress points are currently under surveillance.</p>
+              <div className="overflow-x-auto">
+                <table className="w-full text-left text-xs font-mono">
+                  <thead>
+                    <tr className="bg-charcoal/50 text-coffee-500 border-b border-charcoal-200">
+                      <th className="px-6 py-4 font-bold uppercase tracking-wider">Timestamp</th>
+                      <th className="px-6 py-4 font-bold uppercase tracking-wider">Source IP</th>
+                      <th className="px-6 py-4 font-bold uppercase tracking-wider">Request</th>
+                      <th className="px-6 py-4 font-bold uppercase tracking-wider">Latency</th>
+                      <th className="px-6 py-4 font-bold uppercase tracking-wider">Action</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-charcoal-200/50">
+                    {trafficLogs.slice(0, 10).map((log) => (
+                      <tr key={log.id} className="hover:bg-white/[0.02] transition-colors">
+                        <td className="px-6 py-4 text-coffee-600 whitespace-nowrap">
+                          {new Date(log.timestamp).toLocaleTimeString()}
+                        </td>
+                        <td className="px-6 py-4 text-white font-bold">{log.ip}</td>
+                        <td className="px-6 py-4">
+                          <span className="text-blue-400 mr-2">{log.method}</span>
+                          <span className="text-coffee-300">{log.path}</span>
+                        </td>
+                        <td className="px-6 py-4 text-coffee-500">{log.latency}ms</td>
+                        <td className="px-6 py-4">
+                          <span className={`px-2 py-1 rounded text-[10px] font-bold uppercase tracking-widest ${
+                            log.action === 'block' ? 'bg-red-500/10 text-red-400 border border-red-500/20' : 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20'
+                          }`}>
+                            {log.action}
+                          </span>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
             </div>
           </motion.div>
         )}

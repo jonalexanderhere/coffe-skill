@@ -249,11 +249,23 @@ export interface AuditLog {
   userId?: string;
   userName?: string;
   action: string;
-  category: 'auth' | 'system' | 'security' | 'billing' | 'content';
+  category: 'auth' | 'system' | 'security' | 'billing' | 'content' | 'traffic';
   details: string;
   ipAddress: string;
   status: 'success' | 'failure' | 'warning';
   severity: 'info' | 'low' | 'medium' | 'high' | 'critical';
+}
+
+export interface TrafficLog {
+  id: string;
+  timestamp: string;
+  ip: string;
+  method: string;
+  path: string;
+  status: number;
+  latency: number;
+  userAgent: string;
+  action: 'allow' | 'block' | 'challenge';
 }
 
 export interface SystemHealth {
@@ -267,4 +279,5 @@ export interface SystemHealth {
   blockedIps: number;
   totalTraffic: number;
   p75ResponseTime: number;
+  trafficHistory?: { time: string; allowed: number; blocked: number }[];
 }

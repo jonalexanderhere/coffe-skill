@@ -4,8 +4,12 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import { Plus, Minus, GripVertical, Video, FileText, HelpCircle, Link as LinkIcon, Check, ChevronRight, ChevronLeft, X, AlertTriangle, FileDigit } from "lucide-react";
+import dynamic from 'next/dynamic';
+import 'react-quill/dist/quill.snow.css';
+
+const ReactQuill = dynamic(() => import('react-quill'), { ssr: false });
 import { useAuth } from "@/lib/auth-context";
-import { useCourseStore, useDraftCourseStore } from "@/lib/store";
+import { useCourseStore, useDraftCourseStore, useSystemStore } from "@/lib/store";
 import { useCategoryStore } from "@/lib/store";
 import { CourseLevel } from "@/lib/types";
 
@@ -187,6 +191,18 @@ export default function CreateCoursePage() {
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
     };
+
+    const { addLog } = useSystemStore.getState();
+    addLog({
+      action: "Course Created",
+      category: "content",
+      details: `Mentor ${user.name} created a new course: ${basicInfo.title}`,
+      ipAddress: "127.0.0.1", // In real app, get from server
+      status: "success",
+      severity: "info",
+      userId: user.id,
+      userName: user.name
+    });
 
     addCourse(courseData);
     resetDraft(); // Important: clear draft after success
@@ -540,13 +556,24 @@ export default function CreateCoursePage() {
                     <label className="block text-sm font-medium text-coffee-700 dark:text-coffee-300 mb-1.5">
                       Konten Artikel
                     </label>
-                    <textarea
-                      value={materialForm.content}
-                      onChange={(e) => setMaterialForm({ ...materialForm, content: e.target.value })}
-                      placeholder="Tulis konten artikel di sini..."
-                      rows={8}
-                      className="w-full px-4 py-3 text-sm bg-coffee-50 dark:bg-charcoal border border-coffee-200 dark:border-charcoal-200 rounded-xl text-coffee-800 dark:text-white focus:outline-none resize-none"
-                    />
+                    <div className="bg-white dark:bg-charcoal rounded-xl overflow-hidden border border-coffee-200 dark:border-charcoal-200">
+                      <ReactQuill
+                        theme="snow"
+                        value={materialForm.content}
+                        onChange={(content) => setMaterialForm({ ...materialForm, content })}
+                        placeholder="Tulis konten artikel di sini..."
+                        className="h-64 dark:text-white"
+                        modules={{
+                          toolbar: [
+                            [{ 'header': [1, 2, 3, false] }],
+                            ['bold', 'italic', 'underline', 'strike'],
+                            [{ 'list': 'ordered'}, { 'list': 'bullet' }],
+                            ['link', 'blockquote', 'code-block'],
+                            ['clean']
+                          ],
+                        }}
+                      />
+                    </div>
                   </div>
                 )}
 

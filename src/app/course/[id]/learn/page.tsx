@@ -331,11 +331,10 @@ export default function CourseLearnPage() {
                   <div className="bg-white dark:bg-charcoal-light rounded-[32px] p-8 md:p-12 border border-coffee-100 dark:border-charcoal-200 shadow-sm min-h-[400px]">
                     <div className="prose dark:prose-invert max-w-none">
                       <h2 className="text-3xl font-bold mb-6 text-coffee-800 dark:text-white">{activeMaterial.title}</h2>
-                      <div className="text-coffee-600 dark:text-coffee-300 space-y-4 leading-relaxed">
-                        {activeMaterial.content.split('\n').map((para, i) => (
-                          <p key={i}>{para}</p>
-                        ))}
-                      </div>
+                      <div 
+                        className="text-coffee-600 dark:text-coffee-300 leading-relaxed quill-content"
+                        dangerouslySetInnerHTML={{ __html: activeMaterial.content }}
+                      />
                     </div>
                   </div>
                 )}

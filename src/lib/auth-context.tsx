@@ -3,7 +3,7 @@
 import { createContext, useContext, useEffect, useState, ReactNode } from "react";
 import { User, UserRole, LoginCredentials, RegisterData } from "./types";
 import { useRouter, usePathname } from "next/navigation";
-import { useUserStore } from "./store";
+import { useUserStore, useSystemStore } from "./store";
 import { supabase, isSupabaseConfigured } from "./supabase";
 
 interface AuthContextType {
@@ -188,6 +188,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           
           setUser(existingUser);
           localStorage.setItem(AUTH_KEY, JSON.stringify(existingUser));
+          
+          const { addLog } = useSystemStore.getState();
+          addLog({
+            action: 'Login Success',
+            category: 'auth',
+            details: `User ${existingUser.email} logged in via Supabase`,
+            ipAddress: '127.0.0.1',
+            status: 'success',
+            severity: 'info',
+            userId: existingUser.id,
+            userName: existingUser.name
+          });
+
           return true;
         }
       }
@@ -202,6 +215,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         const { password, ...userWithoutPassword } = foundUser;
         setUser(userWithoutPassword);
         localStorage.setItem(AUTH_KEY, JSON.stringify(userWithoutPassword));
+        
+        const { addLog } = useSystemStore.getState();
+        addLog({
+          action: 'Login Success',
+          category: 'auth',
+          details: `User ${foundUser.email} logged in successfully`,
+          ipAddress: '127.0.0.1',
+          status: 'success',
+          severity: 'info',
+          userId: foundUser.id,
+          userName: foundUser.name
+        });
+
         return true;
       }
       

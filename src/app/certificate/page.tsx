@@ -31,12 +31,42 @@ export default function CertificatePage() {
       };
     });
 
-  const handleDownload = (certName: string) => {
-    alert(`Mengunduh sertifikat: ${certName}...`);
-    // In a real app, we would use a library like html2canvas or generate a PDF server-side
-    setTimeout(() => {
+  const handleDownload = async (cert: any) => {
+    const { default: html2canvas } = await import("html2canvas");
+    const { default: jsPDF } = await import("jspdf");
+    
+    // We need to render the template invisibly to capture it
+    const element = document.getElementById(`cert-template-${cert.id}`);
+    if (!element) {
+      alert("Template sertifikat tidak ditemukan!");
+      return;
+    }
+
+    try {
+      const canvas = await html2canvas(element, {
+        scale: 2, // Higher quality
+        useCORS: true,
+        backgroundColor: "#0F1115"
+      });
+      
+      const imgData = canvas.toDataURL("image/png");
+      const pdf = new jsPDF({
+        orientation: "landscape",
+        unit: "mm",
+        format: "a4"
+      });
+      
+      const imgWidth = 297; // A4 Landscape
+      const imgHeight = (canvas.height * imgWidth) / canvas.width;
+      
+      pdf.addImage(imgData, "PNG", 0, 0, imgWidth, imgHeight);
+      pdf.save(`Sertifikat-${cert.course.replace(/\s+/g, "-")}.pdf`);
+      
       alert("Sertifikat berhasil diunduh!");
-    }, 2000);
+    } catch (error) {
+      console.error("Download error:", error);
+      alert("Gagal mengunduh sertifikat. Silakan coba lagi.");
+    }
   };
 
   return (
