@@ -29,49 +29,24 @@ import {
 
 const tabs = ["Overview", "Kurikulum", "Review", "Diskusi"];
 
-const curriculum = [
-  {
-    title: "Pengenalan & Setup",
-    lessons: [
-      { title: "Pengenalan Course", duration: "8:30", isFree: true },
-      { title: "Setup Environment", duration: "15:20", isFree: true },
-      { title: "Project Structure", duration: "12:45", isFree: false },
-    ],
-  },
-  {
-    title: "Fundamental Concepts",
-    lessons: [
-      { title: "Core Concepts Overview", duration: "20:10", isFree: false },
-      { title: "Hands-on Practice", duration: "25:30", isFree: false },
-      { title: "Quiz: Fundamental", duration: "10:00", isFree: false },
-    ],
-  },
-  {
-    title: "Advanced Techniques",
-    lessons: [
-      { title: "Advanced Patterns", duration: "30:15", isFree: false },
-      { title: "Real-world Project", duration: "45:20", isFree: false },
-      { title: "Best Practices", duration: "18:40", isFree: false },
-    ],
-  },
-  {
-    title: "Final Project",
-    lessons: [
-      { title: "Project Planning", duration: "15:00", isFree: false },
-      { title: "Implementation", duration: "60:00", isFree: false },
-      { title: "Deployment & Review", duration: "20:00", isFree: false },
-    ],
-  },
-];
+// Demo curriculum removed in favor of dynamic data
 
 export default function CourseDetailPage() {
   const router = useRouter();
   const params = useParams();
   const [activeTab, setActiveTab] = useState("Overview");
   const [expandedModule, setExpandedModule] = useState<number | null>(0);
+  const [isSharing, setIsSharing] = useState(false);
+  
   const { user } = useAuth();
-  const { getCourseById } = useCourseStore();
+  const { getCourseById, addReview } = useCourseStore();
   const { enrollUser, isUserEnrolled } = useEnrollmentStore();
+
+  const handleShare = () => {
+    navigator.clipboard.writeText(window.location.href);
+    setIsSharing(true);
+    setTimeout(() => setIsSharing(false), 2000);
+  };
 
   const course = getCourseById(params.id as string);
   const isEnrolled = user && course ? isUserEnrolled(user.id, course.id) : false;
@@ -374,8 +349,11 @@ export default function CourseDetailPage() {
                   <button className="flex-1 py-2 text-xs font-medium text-coffee-500 dark:text-coffee-400 hover:text-coffee-700 dark:hover:text-white border border-coffee-100 dark:border-charcoal-200 rounded-lg flex items-center justify-center gap-1.5 transition-colors">
                     <Heart size={14} /> Wishlist
                   </button>
-                  <button className="flex-1 py-2 text-xs font-medium text-coffee-500 dark:text-coffee-400 hover:text-coffee-700 dark:hover:text-white border border-coffee-100 dark:border-charcoal-200 rounded-lg flex items-center justify-center gap-1.5 transition-colors">
-                    <Share2 size={14} /> Share
+                  <button 
+                    onClick={handleShare}
+                    className="flex-1 py-2 text-xs font-medium text-coffee-500 dark:text-coffee-400 hover:text-coffee-700 dark:hover:text-white border border-coffee-100 dark:border-charcoal-200 rounded-lg flex items-center justify-center gap-1.5 transition-colors"
+                  >
+                    <Share2 size={14} /> {isSharing ? "Copied!" : "Share"}
                   </button>
                 </div>
               </div>

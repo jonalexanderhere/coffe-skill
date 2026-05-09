@@ -94,6 +94,7 @@ interface CourseStore {
   approveCourse: (id: string) => void;
   rejectCourse: (id: string, reason: string) => void;
   publishCourse: (id: string) => void;
+  addReview: (courseId: string, review: { rating: number; comment: string }) => void;
   addChapter: (courseId: string, chapter: Chapter) => void;
   updateChapter: (courseId: string, chapterId: string, updates: Partial<Chapter>) => void;
   deleteChapter: (courseId: string, chapterId: string) => void;
@@ -244,6 +245,21 @@ export const useCourseStore = create<CourseStore>()(
             c.id === id ? { ...c, status: 'published' as const, publishedAt: new Date().toISOString() } : c
           ),
         })),
+      addReview: (courseId, review) =>
+        set((state) => ({
+          courses: state.courses.map((c) => {
+            if (c.id === courseId) {
+              const newReviews = c.rating * c.reviewCount + review.rating;
+              const newCount = c.reviewCount + 1;
+              return {
+                ...c,
+                rating: Number((newReviews / newCount).toFixed(1)),
+                reviewCount: newCount,
+              };
+            }
+            return c;
+          }),
+        })),
       addChapter: (courseId, chapter) =>
         set((state) => ({
           courses: state.courses.map((c) =>
@@ -335,7 +351,7 @@ interface EnrollmentStore {
   enrollments: Enrollment[];
   enrollUser: (userId: string, courseId: string) => void;
   unenrollUser: (userId: string, courseId: string) => void;
-  updateProgress: (userId: string, courseId: string, completedMaterialId: string) => void;
+  updateProgress: (userId: string, courseId: string, completedMaterialId: string, totalMaterials: number) => void;
   getEnrollmentsByUser: (userId: string) => Enrollment[];
   getEnrollmentsByCourse: (courseId: string) => Enrollment[];
   getEnrollment: (userId: string, courseId: string) => Enrollment | undefined;
@@ -377,19 +393,33 @@ export const useEnrollmentStore = create<EnrollmentStore>()(
             (e) => !(e.userId === userId && e.courseId === courseId)
           ),
         })),
-      updateProgress: (userId, courseId, completedMaterialId) =>
+      updateProgress: (userId, courseId, completedMaterialId, totalMaterials) =>
         set((state) => ({
-          enrollments: state.enrollments.map((e) =>
-            e.userId === userId && e.courseId === courseId
-              ? {
-                  ...e,
-                  completedMaterials: e.completedMaterials.includes(completedMaterialId)
-                    ? e.completedMaterials
-                    : [...e.completedMaterials, completedMaterialId],
-                  lastAccessedAt: new Date().toISOString().split('T')[0],
-                }
-              : e
-          ),
+          enrollments: state.enrollments.map((e) => {
+            if (e.userId === userId && e.courseId === courseId) {
+              const alreadyCompleted = e.completedMaterials.includes(completedMaterialId);
+              const newCompleted = alreadyCompleted 
+                ? e.completedMaterials 
+                : [...e.completedMaterials, completedMaterialId];
+              
+              const progress = totalMaterials > 0 
+                ? Math.round((newCompleted.length / totalMaterials) * 100) 
+                : 0;
+                
+              const isComplete = progress >= 100;
+              
+              return {
+                ...e,
+                completedMaterials: newCompleted,
+                progress,
+                certificateIssued: isComplete ? true : e.certificateIssued,
+                certificateId: isComplete && !e.certificateId ? `CERT-${userId.substring(0, 4)}-${courseId.substring(0, 4)}` : e.certificateId,
+                completedAt: isComplete && !e.completedAt ? new Date().toISOString() : e.completedAt,
+                lastAccessedAt: new Date().toISOString().split('T')[0],
+              };
+            }
+            return e;
+          }),
         })),
       getEnrollmentsByUser: (userId) => get().enrollments.filter((e) => e.userId === userId),
       getEnrollmentsByCourse: (courseId) => get().enrollments.filter((e) => e.courseId === courseId),

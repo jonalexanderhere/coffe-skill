@@ -18,7 +18,8 @@ import {
   MessageSquare,
   ChevronDown,
   Clock,
-  ArrowLeft
+  ArrowLeft,
+  Star
 } from "lucide-react";
 import { useCourseStore, useEnrollmentStore } from "@/lib/store";
 import { useAuth } from "@/lib/auth-context";
@@ -34,9 +35,14 @@ export default function CourseLearnPage() {
   const [sidebarOpen, setSidebarOpen] = useState(true);
   const [activeMaterialId, setActiveMaterialId] = useState<string | null>(null);
   const [expandedChapters, setExpandedChapters] = useState<string[]>([]);
+  const [showRatingModal, setShowRatingModal] = useState(false);
+  const [rating, setRating] = useState(5);
+  const [reviewText, setReviewText] = useState("");
+  const [isReviewed, setIsReviewed] = useState(false);
 
   const courseId = params.id as string;
   const course = getCourseById(courseId);
+  const { addReview: submitReview } = useCourseStore();
   const enrollment = user ? getEnrollment(user.id, courseId) : null;
 
   // Initial setup
@@ -50,6 +56,21 @@ export default function CourseLearnPage() {
       }
     }
   }, [course]);
+
+  // Show rating modal when 100%
+  useEffect(() => {
+    if (enrollment?.progress === 100 && !isReviewed) {
+      setShowRatingModal(true);
+    }
+  }, [enrollment?.progress]);
+
+  const handleRate = () => {
+    if (course) {
+      submitReview(course.id, { rating, comment: reviewText });
+      setIsReviewed(true);
+      setShowRatingModal(false);
+    }
+  };
 
   if (!course || !enrollment) {
     return (
@@ -80,9 +101,11 @@ export default function CourseLearnPage() {
     );
   };
 
+  const totalMaterials = course.chapters.reduce((acc, ch) => acc + ch.materials.length, 0);
+
   const handleMaterialComplete = () => {
     if (user && activeMaterialId) {
-      updateProgress(user.id, courseId, activeMaterialId);
+      updateProgress(user.id, courseId, activeMaterialId, totalMaterials);
     }
   };
 
@@ -329,6 +352,82 @@ export default function CourseLearnPage() {
           </div>
         </div>
       </main>
+
+      {/* Completion & Rating Modal */}
+      <AnimatePresence>
+        {showRatingModal && (
+          <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+            <motion.div 
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+              onClick={() => setShowRatingModal(false)}
+            />
+            <motion.div
+              initial={{ opacity: 0, scale: 0.9, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              exit={{ opacity: 0, scale: 0.9, y: 20 }}
+              className="relative bg-white dark:bg-charcoal-light rounded-[40px] p-8 md:p-12 max-w-lg w-full shadow-2xl text-center border border-coffee-100 dark:border-charcoal-200 overflow-hidden"
+            >
+              {/* Background Decoration */}
+              <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-accent via-amber-400 to-emerald-400" />
+              
+              <div className="w-24 h-24 bg-emerald-500/10 rounded-full flex items-center justify-center mx-auto mb-6">
+                <CheckCircle size={48} className="text-emerald-500" />
+              </div>
+
+              <h2 className="text-2xl font-bold text-coffee-800 dark:text-white mb-2">Selamat! Anda Lulus</h2>
+              <p className="text-coffee-500 dark:text-coffee-400 mb-8">
+                Anda telah menyelesaikan semua materi dalam kursus "{course.title}". Sertifikat Anda sudah tersedia!
+              </p>
+
+              <div className="bg-coffee-50 dark:bg-charcoal rounded-3xl p-6 mb-8 border border-coffee-100 dark:border-charcoal-200">
+                <p className="text-sm font-bold text-coffee-700 dark:text-white mb-4">Berikan Rating Kursus</p>
+                <div className="flex justify-center gap-2 mb-6">
+                  {[1, 2, 3, 4, 5].map((star) => (
+                    <button 
+                      key={star}
+                      onClick={() => setRating(star)}
+                      className="transition-transform hover:scale-110 active:scale-95"
+                    >
+                      <Star 
+                        size={32} 
+                        className={`${star <= rating ? "text-amber-400 fill-amber-400" : "text-coffee-200"}`} 
+                      />
+                    </button>
+                  ))}
+                </div>
+                <textarea 
+                  value={reviewText}
+                  onChange={(e) => setReviewText(e.target.value)}
+                  placeholder="Ceritakan pengalaman belajar Anda..."
+                  className="w-full bg-white dark:bg-charcoal-light border border-coffee-100 dark:border-charcoal-200 rounded-2xl p-4 text-sm focus:outline-none focus:border-accent/50 resize-none"
+                  rows={3}
+                />
+              </div>
+
+              <div className="flex flex-col gap-3">
+                <button 
+                  onClick={handleRate}
+                  className="w-full py-4 bg-accent text-white rounded-2xl font-bold hover:bg-accent-hover transition-all shadow-lg shadow-accent/20"
+                >
+                  Kirim & Selesaikan
+                </button>
+                <Link 
+                  href="/certificate"
+                  className="w-full py-4 text-coffee-600 dark:text-coffee-400 font-bold hover:text-coffee-800 dark:hover:text-white transition-colors"
+                >
+                  Lihat Sertifikat Saya
+                </Link>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
+
+// Add Star to lucide-react imports
+
