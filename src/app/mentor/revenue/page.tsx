@@ -1,6 +1,6 @@
 "use client";
 
-import { motion } from "motion/react";
+import { motion } from "framer-motion";
 import { DollarSign, TrendingUp, ArrowUpRight, Download } from "lucide-react";
 
 export default function RevenuePage() {
