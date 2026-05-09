@@ -109,9 +109,10 @@ export default function CertificatePage() {
                     </div>
                     <div className="flex gap-2">
                       <button 
-                        onClick={(e) => { 
+                        onClick={async (e) => { 
                           e.stopPropagation(); 
-                          handleDownload(cert.course);
+                          setSelectedCert(cert);
+                          setTimeout(() => handleDownload(cert), 100);
                         }}
                         className="flex-1 flex items-center justify-center gap-1.5 py-2.5 text-xs font-medium text-white bg-accent hover:bg-accent-hover rounded-xl transition-colors"
                       >
@@ -136,6 +137,22 @@ export default function CertificatePage() {
               <Link href="/explore" className="inline-block mt-6 px-6 py-2.5 text-sm font-semibold text-white bg-accent rounded-xl">
                 Cari Kursus
               </Link>
+            </div>
+          )}
+        </div>
+
+        {/* Hidden Capture Area */}
+        <div className="fixed -left-[9999px] top-0 opacity-0 pointer-events-none">
+          {selectedCert && (
+            <div id={`cert-template-${selectedCert.id}`}>
+              <CertificateTemplate
+                recipientName={selectedCert.recipientName}
+                courseName={selectedCert.course}
+                completionDate={selectedCert.date}
+                instructorName={selectedCert.instructor}
+                certificateId={selectedCert.id}
+                grade={selectedCert.grade}
+              />
             </div>
           )}
         </div>
@@ -173,7 +190,7 @@ export default function CertificatePage() {
               />
               <div className="flex justify-center gap-3 mt-6">
                 <button 
-                  onClick={() => handleDownload(selectedCert.course)}
+                  onClick={() => handleDownload(selectedCert)}
                   className="flex items-center gap-2 px-6 py-3 text-sm font-medium text-white bg-accent hover:bg-accent-hover rounded-xl transition-colors"
                 >
                   <Download size={16} /> Download Certificate
