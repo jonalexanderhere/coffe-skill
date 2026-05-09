@@ -447,7 +447,7 @@ export const useTeamStore = create<TeamStore>()(
           name: 'Ghifari Azhar',
           email: 'ghifari@coffeeskill.id',
           role: 'Developer',
-          avatar: 'https://github.com/ghifariazhar.png',
+          avatar: 'https://i.ibb.co.com/wZ2g7G5w/image.png',
           github: 'ghifariazhar',
           bio: 'Passionate developer dan founder di CoffeeSkill. Membangun platform pembelajaran teknologi terdepan dari Lampung Barat.'
         },
@@ -456,9 +456,9 @@ export const useTeamStore = create<TeamStore>()(
           name: 'Rico',
           email: 'rico@coffeeskill.id',
           role: 'Developer',
-          avatar: 'https://github.com/rico.png',
+          avatar: 'https://i.ibb.co.com/GQGdMzYV/Rico.jpg',
           github: 'rico',
-          bio: 'Core developer at CoffeeSkill.'
+          bio: 'Creative Developer dan Co-Founder di CoffeeSkill. Berfokus pada pengembangan antarmuka pengguna yang intuitif dan performa aplikasi yang tinggi.'
         }
       ],
       addTeamMember: (member) => set((state) => ({ teamMembers: [...state.teamMembers, member] })),
