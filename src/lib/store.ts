@@ -18,7 +18,32 @@ interface UserStore {
 export const useUserStore = create<UserStore>()(
   persist(
     (set, get) => ({
-      users: [],
+      users: [
+        {
+          id: 'ghifari-azhar-admin',
+          name: 'Ghifari Azhar',
+          email: 'fahriazhar148@gmail.com',
+          role: 'superadmin',
+          status: 'active',
+          joinedDate: new Date().toISOString().split('T')[0]
+        },
+        {
+          id: 'rico-admin',
+          name: 'Rico',
+          email: 'rikoiqbal36@gmail.com',
+          role: 'superadmin',
+          status: 'active',
+          joinedDate: new Date().toISOString().split('T')[0]
+        },
+        {
+          id: 'mentor-1',
+          name: 'Mentor 1',
+          email: 'mentor1@coffeeskill.id',
+          role: 'mentor',
+          status: 'active',
+          joinedDate: new Date().toISOString().split('T')[0]
+        }
+      ],
       addUser: (user) => set((state) => ({ users: [...state.users, user] })),
       updateUser: (id, updates) =>
         set((state) => ({
