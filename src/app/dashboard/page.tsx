@@ -33,7 +33,7 @@ export default function DashboardPage() {
     return {
       id: e.courseId,
       title: course?.title || "Unknown Course",
-      progress: e.progress,
+      progress: e.progress || 0,
       lastAccessed: e.lastAccessedAt,
       nextLesson: course?.chapters?.[0]?.materials?.[0]?.title || "Pelajari materi",
     };
@@ -44,19 +44,18 @@ export default function DashboardPage() {
     coursesEnrolled: userEnrollments.length,
     coursesCompleted: userEnrollments.filter(e => e.progress === 100).length,
     certificates: userEnrollments.filter(e => e.certificateIssued).length,
-    currentStreak: 0, // Would need activity tracking for this
-    hoursLearned: userEnrollments.length * 4, // Placeholder calculation
+    currentStreak: userEnrollments.length > 0 ? 1 : 0, 
+    hoursLearned: userEnrollments.reduce((acc, curr) => acc + (curr.progress > 0 ? 2 : 0), 0),
   };
 
-  const recentActivity = [
-    { type: "lesson", title: "Melanjutkan belajar", time: "Baru saja", icon: "CheckCircle" },
-  ];
+  const recentActivity = userEnrollments.length > 0 ? [
+    { type: "lesson", title: "Berhasil terdaftar di kursus", time: "Baru saja", icon: "CheckCircle" },
+  ] : [];
 
   const achievements = [
-    { name: "Pemula Cerdas", description: "Daftar di kursus pertama", unlocked: true },
-    { name: "Pembelajar Aktif", description: "Selesaikan 5 lesson", unlocked: userEnrollments.length > 0 },
-    { name: "Streak Champion", description: "Belajar 30 hari berturut-turut", unlocked: false },
-    { name: "Community Star", description: "Bantu 10 siswa di forum", unlocked: false },
+    { name: "Pemula Cerdas", description: "Daftar di kursus pertama", unlocked: userEnrollments.length > 0 },
+    { name: "Pembelajar Aktif", description: "Selesaikan 5 lesson", unlocked: userEnrollments.some(e => e.progress > 50) },
+    { name: "Sertifikat Pertama", description: "Selesaikan satu kursus penuh", unlocked: stats.certificates > 0 },
   ];
 
   return (
@@ -64,10 +63,12 @@ export default function DashboardPage() {
       {/* Welcome */}
       <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
         <h1 className="text-2xl font-bold text-coffee-800 dark:text-white" style={{ fontFamily: "var(--font-poppins)" }}>
-          Selamat Datang, {user?.name?.split(" ")[0] || "Student"}! 👋
+          Selamat Datang, {user?.name?.split(" ")[0] || "Siswa"}! 👋
         </h1>
         <p className="text-sm text-coffee-500 dark:text-coffee-400 mt-1">
-          Lanjutkan belajar dan raih target minggu ini
+          {userEnrollments.length > 0 
+            ? "Lanjutkan belajar dan raih target minggu ini" 
+            : "Mulai perjalanan belajarmu hari ini"}
         </p>
       </motion.div>
 
@@ -100,71 +101,85 @@ export default function DashboardPage() {
         <div className="lg:col-span-2 space-y-4">
           <div className="flex items-center justify-between">
             <h2 className="text-lg font-semibold text-coffee-800 dark:text-white">Lanjutkan Belajar</h2>
-            <Link href="/dashboard" className="text-xs font-medium text-accent hover:text-accent-hover flex items-center gap-1">
-              Lihat Semua <ArrowRight size={12} />
-            </Link>
+            {userEnrollments.length > 0 && (
+              <Link href="/dashboard/courses" className="text-xs font-medium text-accent hover:text-accent-hover flex items-center gap-1">
+                Lihat Semua <ArrowRight size={12} />
+              </Link>
+            )}
           </div>
 
           <div className="space-y-3">
-            {enrolledCoursesData.map((course, i) => (
-              <motion.div
-                key={course.id}
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.2 + i * 0.05 }}
-              >
-                <Link
-                  href={`/course/${course.id}`}
-                  className="group flex items-center gap-4 p-4 bg-white dark:bg-charcoal-light rounded-2xl border border-coffee-100 dark:border-charcoal-200 hover:border-coffee-200 dark:hover:border-charcoal-300 hover:shadow-sm transition-all duration-300"
+            {userEnrollments.length > 0 ? (
+              enrolledCoursesData.map((course, i) => (
+                <motion.div
+                  key={course.id}
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.2 + i * 0.05 }}
                 >
-                  <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-coffee-100 to-coffee-50 dark:from-charcoal-200 dark:to-charcoal flex items-center justify-center shrink-0">
-                    <Code2 size={20} className="text-coffee-400" />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-semibold text-coffee-800 dark:text-white truncate group-hover:text-accent transition-colors">
-                      {course.title}
-                    </p>
-                    <p className="text-xs text-coffee-400 dark:text-coffee-500 mt-0.5">
-                      Selanjutnya: {course.nextLesson}
-                    </p>
-                    <div className="mt-2 w-full h-1.5 bg-coffee-100 dark:bg-charcoal-200 rounded-full overflow-hidden">
-                      <div className="h-full bg-accent rounded-full transition-all" style={{ width: `${course.progress}%` }} />
+                  <Link
+                    href={`/course/${course.id}`}
+                    className="group flex items-center gap-4 p-4 bg-white dark:bg-charcoal-light rounded-2xl border border-coffee-100 dark:border-charcoal-200 hover:border-coffee-200 dark:hover:border-charcoal-300 hover:shadow-sm transition-all duration-300"
+                  >
+                    <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-coffee-100 to-coffee-50 dark:from-charcoal-200 dark:to-charcoal flex items-center justify-center shrink-0">
+                      <Code2 size={20} className="text-coffee-400" />
                     </div>
-                  </div>
-                  <div className="text-right shrink-0">
-                    <span className="text-sm font-bold text-accent">{course.progress}%</span>
-                    <div className="mt-2">
-                      <Play size={16} className="text-coffee-400 group-hover:text-accent transition-colors" />
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-semibold text-coffee-800 dark:text-white truncate group-hover:text-accent transition-colors">
+                        {course.title}
+                      </p>
+                      <p className="text-xs text-coffee-400 dark:text-coffee-500 mt-0.5">
+                        Selanjutnya: {course.nextLesson}
+                      </p>
+                      <div className="mt-2 w-full h-1.5 bg-coffee-100 dark:bg-charcoal-200 rounded-full overflow-hidden">
+                        <div className="h-full bg-accent rounded-full transition-all" style={{ width: `${course.progress}%` }} />
+                      </div>
                     </div>
-                  </div>
+                    <div className="text-right shrink-0">
+                      <span className="text-sm font-bold text-accent">{course.progress}%</span>
+                      <div className="mt-2">
+                        <Play size={16} className="text-coffee-400 group-hover:text-accent transition-colors" />
+                      </div>
+                    </div>
+                  </Link>
+                </motion.div>
+              ))
+            ) : (
+              <div className="p-8 text-center bg-white dark:bg-charcoal-light rounded-2xl border border-coffee-100 dark:border-charcoal-200 border-dashed">
+                <BookOpen size={32} className="mx-auto text-coffee-200 dark:text-charcoal-200 mb-3" />
+                <p className="text-sm text-coffee-600 dark:text-coffee-300">Belum ada kursus yang diikuti</p>
+                <Link href="/explore" className="inline-block mt-4 text-xs font-bold text-accent hover:underline">
+                  Cari Kursus Sekarang
                 </Link>
-              </motion.div>
-            ))}
+              </div>
+            )}
           </div>
 
-          {/* Weekly Activity Chart */}
+          {/* Weekly Activity Chart - Only show if has data or keep as generic placeholder */}
           <div className="bg-white dark:bg-charcoal-light rounded-2xl border border-coffee-100 dark:border-charcoal-200 p-5">
             <h3 className="text-sm font-semibold text-coffee-700 dark:text-white mb-4">Aktivitas Mingguan</h3>
             <div className="flex items-end justify-between gap-2 h-32">
               {[
-                { day: "Sen", hours: 2.5 },
-                { day: "Sel", hours: 4.0 },
-                { day: "Rab", hours: 1.5 },
-                { day: "Kam", hours: 5.0 },
-                { day: "Jum", hours: 3.0 },
-                { day: "Sab", hours: 6.0 },
-                { day: "Min", hours: 4.5 },
+                { day: "Sen", hours: userEnrollments.length > 0 ? 1.5 : 0 },
+                { day: "Sel", hours: userEnrollments.length > 0 ? 0.5 : 0 },
+                { day: "Rab", hours: userEnrollments.length > 0 ? 2.0 : 0 },
+                { day: "Kam", hours: userEnrollments.length > 0 ? 1.0 : 0 },
+                { day: "Jum", hours: userEnrollments.length > 0 ? 3.5 : 0 },
+                { day: "Sab", hours: userEnrollments.length > 0 ? 4.0 : 0 },
+                { day: "Min", hours: userEnrollments.length > 0 ? 2.5 : 0 },
               ].map((item) => (
                 <div key={item.day} className="flex-1 flex flex-col items-center gap-2">
                   <div className="w-full relative" style={{ height: "100px" }}>
                     <div
                       className="absolute bottom-0 left-1/2 -translate-x-1/2 w-7 bg-accent/15 rounded-md hover:bg-accent/30 transition-colors"
-                      style={{ height: `${(item.hours / 6) * 100}%` }}
+                      style={{ height: `${item.hours > 0 ? (item.hours / 6) * 100 : 5}%` }}
                     >
-                      <div
-                        className="absolute bottom-0 left-0 right-0 bg-accent rounded-md"
-                        style={{ height: `${(item.hours / 6) * 80}%` }}
-                      />
+                      {item.hours > 0 && (
+                        <div
+                          className="absolute bottom-0 left-0 right-0 bg-accent rounded-md"
+                          style={{ height: "100%" }}
+                        />
+                      )}
                     </div>
                   </div>
                   <span className="text-[10px] text-coffee-400 font-medium">{item.day}</span>
@@ -179,22 +194,26 @@ export default function DashboardPage() {
           {/* Recent Activity */}
           <div className="bg-white dark:bg-charcoal-light rounded-2xl border border-coffee-100 dark:border-charcoal-200 p-5">
             <h3 className="text-sm font-semibold text-coffee-700 dark:text-white mb-4">Aktivitas Terakhir</h3>
-            <div className="space-y-4">
-              {recentActivity.map((activity, i) => {
-                const IconComp = activity.icon === "CheckCircle" ? CheckCircle : activity.icon === "Award" ? Award : MessageCircle;
-                return (
-                  <div key={i} className="flex items-start gap-3">
-                    <div className="mt-0.5 p-1.5 rounded-lg bg-coffee-50 dark:bg-charcoal-200 shrink-0">
-                      <IconComp size={14} className="text-coffee-400" />
+            {recentActivity.length > 0 ? (
+              <div className="space-y-4">
+                {recentActivity.map((activity, i) => {
+                  const IconComp = activity.icon === "CheckCircle" ? CheckCircle : activity.icon === "Award" ? Award : MessageCircle;
+                  return (
+                    <div key={i} className="flex items-start gap-3">
+                      <div className="mt-0.5 p-1.5 rounded-lg bg-coffee-50 dark:bg-charcoal-200 shrink-0">
+                        <IconComp size={14} className="text-coffee-400" />
+                      </div>
+                      <div className="min-w-0">
+                        <p className="text-xs font-medium text-coffee-700 dark:text-coffee-200 leading-snug">{activity.title}</p>
+                        <p className="text-[10px] text-coffee-400 mt-0.5">{activity.time}</p>
+                      </div>
                     </div>
-                    <div className="min-w-0">
-                      <p className="text-xs font-medium text-coffee-700 dark:text-coffee-200 leading-snug">{activity.title}</p>
-                      <p className="text-[10px] text-coffee-400 mt-0.5">{activity.time}</p>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
+                  );
+                })}
+              </div>
+            ) : (
+              <p className="text-[10px] text-coffee-400 italic">Belum ada aktivitas baru</p>
+            )}
           </div>
 
           {/* Achievements */}

@@ -84,6 +84,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (!isSupabaseConfigured) return;
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+      console.log("Auth State Changed:", event, session?.user?.email);
+      
       if (session?.user) {
         const supabaseUser = session.user;
         let existingUser = users.find(u => u.email === supabaseUser.email);
@@ -103,6 +105,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
         setUser(existingUser);
         localStorage.setItem(AUTH_KEY, JSON.stringify(existingUser));
+
+        // Redirect after successful sign in if on login page or auth callback
+        if (event === "SIGNED_IN" && (pathname === "/login" || pathname === "/auth/callback" || pathname === "/")) {
+          switch (existingUser.role) {
+            case "superadmin":
+              router.push("/superadmin");
+              break;
+            case "mentor":
+              router.push("/mentor");
+              break;
+            default:
+              router.push("/dashboard");
+          }
+        }
       } else {
         const stored = localStorage.getItem(AUTH_KEY);
         if (!stored) {
