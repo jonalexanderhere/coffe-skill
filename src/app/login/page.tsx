@@ -13,7 +13,7 @@ export default function LoginPage() {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const { login } = useAuth();
+  const { login, loginWithGoogle } = useAuth();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -23,7 +23,7 @@ export default function LoginPage() {
     try {
       const success = await login({ email, password });
       if (!success) {
-        setError("Email atau password salah. Gunakan credentials demo:");
+        setError("Email atau password salah.");
       }
     } catch {
       setError("Terjadi kesalahan. Silakan coba lagi.");
@@ -59,15 +59,6 @@ export default function LoginPage() {
             {error && (
               <div className="p-3 bg-red-500/10 border border-red-500/20 rounded-xl">
                 <p className="text-xs text-red-400">{error}</p>
-                <p className="text-[10px] text-red-500 mt-1">
-                  Super Admin: admin@coffeeskill.id / admin123
-                </p>
-                <p className="text-[10px] text-red-500">
-                  Mentor: mentor@coffeeskill.id / mentor123
-                </p>
-                <p className="text-[10px] text-red-500">
-                  Student: student@coffeeskill.id / student123
-                </p>
               </div>
             )}
             <div>
@@ -110,7 +101,7 @@ export default function LoginPage() {
             </div>
 
             <div className="flex items-center justify-between">
-              <label className="flex items-center gap-2">
+              <label className="flex items-center gap-2 cursor-pointer">
                 <input type="checkbox" className="w-4 h-4 rounded border-coffee-300 text-accent focus:ring-accent/20" />
                 <span className="text-sm text-coffee-500 dark:text-coffee-400">Ingat saya</span>
               </label>
@@ -145,7 +136,10 @@ export default function LoginPage() {
           </div>
 
           <div className="grid grid-cols-2 gap-3">
-            <button className="flex items-center justify-center gap-2 px-4 py-2.5 text-sm font-medium text-coffee-600 dark:text-coffee-300 bg-white dark:bg-charcoal-light border border-coffee-200 dark:border-charcoal-200 rounded-xl hover:bg-coffee-50 dark:hover:bg-charcoal-200 transition-colors">
+            <button 
+              onClick={() => loginWithGoogle()}
+              className="flex items-center justify-center gap-2 px-4 py-2.5 text-sm font-medium text-coffee-600 dark:text-coffee-300 bg-white dark:bg-charcoal-light border border-coffee-200 dark:border-charcoal-200 rounded-xl hover:bg-coffee-50 dark:hover:bg-charcoal-200 transition-colors"
+            >
               <svg className="w-4 h-4" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/></svg>
               Google
             </button>
@@ -179,18 +173,18 @@ export default function LoginPage() {
           </p>
           <div className="flex items-center justify-center gap-4">
             <div className="text-center">
-              <p className="text-2xl font-bold text-white">12.5k+</p>
-              <p className="text-xs text-coffee-400">Siswa</p>
+              <p className="text-2xl font-bold text-white">Community</p>
+              <p className="text-xs text-coffee-400">Terbuka</p>
             </div>
             <div className="w-px h-10 bg-coffee-600" />
             <div className="text-center">
-              <p className="text-2xl font-bold text-white">200+</p>
-              <p className="text-xs text-coffee-400">Kursus</p>
+              <p className="text-2xl font-bold text-white">Sertifikat</p>
+              <p className="text-xs text-coffee-400">Resmi</p>
             </div>
             <div className="w-px h-10 bg-coffee-600" />
             <div className="text-center">
-              <p className="text-2xl font-bold text-white">94%</p>
-              <p className="text-xs text-coffee-400">Lulus</p>
+              <p className="text-2xl font-bold text-white">Karir</p>
+              <p className="text-xs text-coffee-400">Digital</p>
             </div>
           </div>
         </div>

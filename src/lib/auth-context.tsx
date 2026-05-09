@@ -11,6 +11,7 @@ interface AuthContextType {
   isAuthenticated: boolean;
   isLoading: boolean;
   login: (credentials: LoginCredentials) => Promise<boolean>;
+  loginWithGoogle: () => Promise<void>;
   register: (data: RegisterData) => Promise<boolean>;
   logout: () => void;
   updateUser: (updates: Partial<User>) => void;
@@ -50,13 +51,25 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       if (isSupabaseConfigured) {
         const { data: { session } } = await supabase.auth.getSession();
         if (session?.user) {
-          // Map Supabase user to our User type
           const supabaseUser = session.user;
-          const existingUser = users.find(u => u.email === supabaseUser.email);
-          if (existingUser) {
-            setUser(existingUser);
-            localStorage.setItem(AUTH_KEY, JSON.stringify(existingUser));
+          let existingUser = users.find(u => u.email === supabaseUser.email);
+          
+          if (!existingUser) {
+            // Auto-register if not in store but in Supabase (OAuth case)
+            const newUser: User = {
+              id: supabaseUser.id,
+              name: supabaseUser.user_metadata.full_name || supabaseUser.email?.split('@')[0] || "User",
+              email: supabaseUser.email || "",
+              role: 'student',
+              status: 'active',
+              joinedDate: new Date().toISOString().split('T')[0],
+            };
+            addUser(newUser);
+            existingUser = newUser;
           }
+
+          setUser(existingUser);
+          localStorage.setItem(AUTH_KEY, JSON.stringify(existingUser));
         }
       }
       
@@ -64,7 +77,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     };
     
     loadUser();
-  }, [users]);
+  }, [users, addUser]);
 
   // Listen for Supabase auth changes
   useEffect(() => {
@@ -73,13 +86,24 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
       if (session?.user) {
         const supabaseUser = session.user;
-        const existingUser = users.find(u => u.email === supabaseUser.email);
-        if (existingUser) {
-          setUser(existingUser);
-          localStorage.setItem(AUTH_KEY, JSON.stringify(existingUser));
+        let existingUser = users.find(u => u.email === supabaseUser.email);
+        
+        if (!existingUser) {
+          const newUser: User = {
+            id: supabaseUser.id,
+            name: supabaseUser.user_metadata.full_name || supabaseUser.email?.split('@')[0] || "User",
+            email: supabaseUser.email || "",
+            role: 'student',
+            status: 'active',
+            joinedDate: new Date().toISOString().split('T')[0],
+          };
+          addUser(newUser);
+          existingUser = newUser;
         }
+
+        setUser(existingUser);
+        localStorage.setItem(AUTH_KEY, JSON.stringify(existingUser));
       } else {
-        // Only clear if not using demo mode
         const stored = localStorage.getItem(AUTH_KEY);
         if (!stored) {
           setUser(null);
@@ -88,7 +112,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     });
 
     return () => subscription.unsubscribe();
-  }, [users]);
+  }, [users, addUser]);
 
   // Route protection
   useEffect(() => {
@@ -107,7 +131,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         return;
       }
       if (isProtected && user && user.role !== role) {
-        // Superadmin can access everything, otherwise redirect
         if (user.role !== "superadmin") {
           router.push("/");
           return;
@@ -128,7 +151,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setUser(userWithoutPassword);
       localStorage.setItem(AUTH_KEY, JSON.stringify(userWithoutPassword));
 
-      // Also sign in with Supabase if configured
       if (isSupabaseConfigured) {
         await supabase.auth.signInWithPassword({
           email: credentials.email,
@@ -151,6 +173,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return false;
   };
 
+  const loginWithGoogle = async () => {
+    if (!isSupabaseConfigured) return;
+    await supabase.auth.signInWithOAuth({
+      provider: "google",
+      options: {
+        redirectTo: `${window.location.origin}/auth/callback`,
+      },
+    });
+  };
+
   const register = async (data: RegisterData): Promise<boolean> => {
     await new Promise((resolve) => setTimeout(resolve, 500));
 
@@ -171,7 +203,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setUser(userWithoutPassword);
     localStorage.setItem(AUTH_KEY, JSON.stringify(userWithoutPassword));
 
-    // Also sign up with Supabase if configured
     if (isSupabaseConfigured) {
       await supabase.auth.signUp({
         email: data.email,
@@ -222,6 +253,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         isAuthenticated: !!user,
         isLoading,
         login,
+        loginWithGoogle,
         register,
         logout,
         updateUser,
