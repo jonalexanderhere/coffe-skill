@@ -184,6 +184,7 @@ export interface PlatformSettings {
   payoutSchedule: 'weekly' | 'monthly';
   supportEmail: string;
   maintenanceMode: boolean;
+  mentorRegistrationOpen: boolean;
 }
 
 // Auth types

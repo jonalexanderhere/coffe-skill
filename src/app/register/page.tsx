@@ -1,13 +1,16 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
 import { motion } from "framer-motion";
 import { Eye, EyeOff, Mail, Lock, User, ArrowRight, Coffee, GraduationCap } from "lucide-react";
 import { useAuth } from "@/lib/auth-context";
+import { useSettingsStore } from "@/lib/store";
 
 export default function RegisterPage() {
+  const { settings } = useSettingsStore();
   const [showPassword, setShowPassword] = useState(false);
   const [role, setRole] = useState<"student" | "mentor">("student");
   const [name, setName] = useState("");
@@ -17,11 +20,25 @@ export default function RegisterPage() {
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [agreed, setAgreed] = useState(false);
-  const { register } = useAuth();
+  const { register, isAuthenticated, user } = useAuth();
+  const router = useRouter();
+
+  // Redirect if already logged in
+  useEffect(() => {
+    if (isAuthenticated && user) {
+      const redirectPath = user.role === 'superadmin' ? '/superadmin' : user.role === 'mentor' ? '/mentor' : '/dashboard';
+      router.push(redirectPath);
+    }
+  }, [isAuthenticated, user, router]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
+
+    if (role === "mentor" && !settings.mentorRegistrationOpen) {
+      setError("Pendaftaran mentor baru saat ini sedang ditutup.");
+      return;
+    }
     
     if (!name.trim() || !email.trim() || !password.trim()) {
       setError("Semua field harus diisi");
@@ -111,7 +128,7 @@ export default function RegisterPage() {
           </p>
 
           {/* Role Selector */}
-          <div className="flex p-1 mb-6 bg-coffee-50 dark:bg-charcoal-light rounded-xl border border-coffee-100 dark:border-charcoal-200">
+          <div className="flex p-1 mb-2 bg-coffee-50 dark:bg-charcoal-light rounded-xl border border-coffee-100 dark:border-charcoal-200">
             <button
               onClick={() => setRole("student")}
               className={`flex-1 py-2.5 text-sm font-medium rounded-lg transition-colors ${
@@ -133,6 +150,14 @@ export default function RegisterPage() {
               Mentor
             </button>
           </div>
+
+          {role === "mentor" && !settings.mentorRegistrationOpen && (
+            <div className="mb-6 p-3 bg-amber-50 dark:bg-amber-500/10 border border-amber-200 dark:border-amber-500/20 rounded-xl">
+              <p className="text-[10px] text-amber-700 dark:text-amber-400 leading-relaxed font-medium">
+                ⚠️ Pendaftaran mentor sedang ditutup sementara. Silakan hubungi admin atau cek kembali nanti.
+              </p>
+            </div>
+          )}
 
           <form className="space-y-4" onSubmit={handleSubmit}>
             {error && (

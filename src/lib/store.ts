@@ -83,10 +83,13 @@ export const useUserStore = create<UserStore>()(
           }),
         })),
       deleteDuplicateUsers: () => set((state) => {
-        const seen = new Set();
-        const uniqueUsers = state.users.filter(u => {
-          if (seen.has(u.email)) return false;
-          seen.add(u.email);
+        const sortedUsers = [...state.users].sort((a, b) => 
+          new Date(b.joinedDate).getTime() - new Date(a.joinedDate).getTime()
+        );
+        const seenEmails = new Set();
+        const uniqueUsers = sortedUsers.filter(u => {
+          if (seenEmails.has(u.email)) return false;
+          seenEmails.add(u.email);
           return true;
         });
         return { users: uniqueUsers };
@@ -282,6 +285,13 @@ export const useEnrollmentStore = create<EnrollmentStore>()(
           );
           if (exists) return state;
           
+          // Update Course Student Count in CourseStore
+          const { updateCourse, getCourseById } = useCourseStore.getState();
+          const course = getCourseById(courseId);
+          if (course) {
+            updateCourse(courseId, { studentCount: course.studentCount + 1 });
+          }
+
           return {
             enrollments: [
               ...state.enrollments,
@@ -299,11 +309,20 @@ export const useEnrollmentStore = create<EnrollmentStore>()(
           };
         }),
       unenrollUser: (userId, courseId) =>
-        set((state) => ({
-          enrollments: state.enrollments.filter(
-            (e) => !(e.userId === userId && e.courseId === courseId)
-          ),
-        })),
+        set((state) => {
+          // Update Course Student Count in CourseStore
+          const { updateCourse, getCourseById } = useCourseStore.getState();
+          const course = getCourseById(courseId);
+          if (course && course.studentCount > 0) {
+            updateCourse(courseId, { studentCount: course.studentCount - 1 });
+          }
+
+          return {
+            enrollments: state.enrollments.filter(
+              (e) => !(e.userId === userId && e.courseId === courseId)
+            ),
+          };
+        }),
       updateProgress: (userId, courseId, completedMaterialId, totalMaterials) =>
         set((state) => ({
           enrollments: state.enrollments.map((e) => {
@@ -348,11 +367,14 @@ export const useEnrollmentStore = create<EnrollmentStore>()(
       isUserEnrolled: (userId, courseId) =>
         get().enrollments.some((e) => e.userId === userId && e.courseId === courseId),
       deleteDuplicateEnrollments: () => set((state) => {
-        const seen = new Set();
-        const unique = state.enrollments.filter(e => {
+        const sortedEnrollments = [...state.enrollments].sort((a, b) => 
+          (b.progress || 0) - (a.progress || 0)
+        );
+        const seenKeys = new Set();
+        const unique = sortedEnrollments.filter(e => {
           const key = `${e.userId}-${e.courseId}`;
-          if (seen.has(key)) return false;
-          seen.add(key);
+          if (seenKeys.has(key)) return false;
+          seenKeys.add(key);
           return true;
         });
         return { enrollments: unique };
@@ -533,6 +555,7 @@ export const useSettingsStore = create<SettingsStore>()(
         payoutSchedule: 'monthly',
         supportEmail: 'support@coffeeskill.id',
         maintenanceMode: false,
+        mentorRegistrationOpen: true,
       },
       updateSettings: (updates) =>
         set((state) => ({ settings: { ...state.settings, ...updates } })),

@@ -46,21 +46,27 @@ function SidebarContent({
 }) {
   return (
     <>
-      <div className="flex items-center gap-2.5 px-4 py-5 border-b border-coffee-100 dark:border-charcoal-200">
-        <Image src="/coffeskill.png" alt="CoffeeSkill" width={28} height={28} className="rounded-lg shrink-0" />
+      <div className="flex items-center gap-3 px-6 py-8">
+        <div className="w-10 h-10 bg-accent rounded-2xl flex items-center justify-center shadow-lg shadow-accent/20 shrink-0">
+          <Image src="/coffeskill.png" alt="CoffeeSkill" width={24} height={24} className="brightness-0 invert" />
+        </div>
         {!collapsed && (
           <div className="flex flex-col">
-            <span className="text-base font-bold tracking-tight text-coffee-800 dark:text-white leading-none" style={{ fontFamily: "var(--font-poppins)" }}>
-              Coffee<span className="text-accent">Skill</span>
+            <span className="text-lg font-black tracking-tighter text-coffee-800 dark:text-white leading-none" style={{ fontFamily: "var(--font-poppins)" }}>
+              COFFEE<span className="text-accent">SKILL</span>
             </span>
-            <span className="text-[10px] font-semibold text-red-500 uppercase tracking-wider mt-1 flex items-center gap-1">
-              <Shield size={10} /> Super Admin
-            </span>
+            <div className="flex items-center gap-1.5 mt-1.5">
+              <div className="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse" />
+              <span className="text-[8px] font-black text-red-500 uppercase tracking-[0.2em]">
+                System Override
+              </span>
+            </div>
           </div>
         )}
       </div>
 
-      <nav className="flex-1 overflow-y-auto p-3 space-y-1">
+      <nav className="flex-1 px-4 py-4 space-y-2">
+        {!collapsed && <p className="text-[9px] font-black text-coffee-300 uppercase tracking-[0.3em] mb-4 ml-4">Core Management</p>}
         {sidebarLinks.map((link) => {
           const isActive = pathname === link.href || (link.href !== "/superadmin" && pathname.startsWith(link.href));
           return (
@@ -68,26 +74,26 @@ function SidebarContent({
               key={link.label}
               href={link.href}
               onClick={() => setMobileOpen(false)}
-              className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-colors ${
+              className={`group flex items-center gap-4 px-4 py-3.5 rounded-[1.25rem] transition-all duration-300 ${
                 isActive
-                  ? "bg-red-50 text-red-700 dark:bg-red-500/10 dark:text-red-400"
-                  : "text-coffee-600 dark:text-coffee-400 hover:bg-coffee-50 dark:hover:bg-charcoal-200 hover:text-coffee-800 dark:hover:text-white"
+                  ? "bg-accent text-white shadow-xl shadow-accent/20 translate-x-1"
+                  : "text-coffee-500 dark:text-coffee-400 hover:bg-coffee-50 dark:hover:bg-charcoal-200 hover:text-accent"
               }`}
             >
-              <link.icon size={18} className="shrink-0" />
-              {!collapsed && <span>{link.label}</span>}
+              <link.icon size={20} className={`shrink-0 transition-transform duration-500 ${isActive ? 'scale-110' : 'group-hover:rotate-12'}`} />
+              {!collapsed && <span className="text-xs font-black uppercase tracking-widest">{link.label}</span>}
             </Link>
           );
         })}
       </nav>
 
-      <div className="p-3 border-t border-coffee-100 dark:border-charcoal-200">
+      <div className="p-4">
         <button 
           onClick={logout}
-          className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10 transition-colors"
+          className="w-full flex items-center gap-4 px-5 py-4 rounded-2xl text-xs font-black uppercase tracking-widest text-red-500 hover:bg-red-500/10 transition-all group"
         >
-          <LogOut size={18} className="shrink-0" />
-          {!collapsed && <span>Keluar</span>}
+          <LogOut size={20} className="shrink-0 group-hover:-translate-x-1 transition-transform" />
+          {!collapsed && <span>Terminate Session</span>}
         </button>
       </div>
     </>

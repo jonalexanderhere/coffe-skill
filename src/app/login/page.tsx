@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
 import { motion } from "framer-motion";
@@ -8,12 +9,21 @@ import { Eye, EyeOff, Mail, Lock, ArrowRight, Coffee } from "lucide-react";
 import { useAuth } from "@/lib/auth-context";
 
 export default function LoginPage() {
+  const router = useRouter();
   const [showPassword, setShowPassword] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const { login, loginWithGoogle } = useAuth();
+  const { login, loginWithGoogle, isAuthenticated, user } = useAuth();
+
+  // Redirect if already logged in
+  useEffect(() => {
+    if (isAuthenticated && user) {
+      const redirectPath = user.role === 'superadmin' ? '/superadmin' : user.role === 'mentor' ? '/mentor' : '/dashboard';
+      router.push(redirectPath);
+    }
+  }, [isAuthenticated, user, router]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -22,7 +32,11 @@ export default function LoginPage() {
     
     try {
       const success = await login({ email, password });
-      if (!success) {
+      if (success) {
+        // Redirection is partially handled by the useEffect above, 
+        // but we can force it here for faster response if needed.
+        // The auth context's internal state update will trigger the useEffect.
+      } else {
         setError("Email atau password salah.");
       }
     } catch {

@@ -32,7 +32,7 @@ import Link from "next/link";
 export default function CourseLearnPage() {
   const router = useRouter();
   const params = useParams();
-  const { user } = useAuth();
+  const { user, isLoading: authLoading } = useAuth();
   const { getCourseById } = useCourseStore();
   const { getEnrollment, updateProgress } = useEnrollmentStore();
   
@@ -88,6 +88,14 @@ export default function CourseLearnPage() {
     navigator.clipboard.writeText(window.location.origin + `/course/${courseId}`);
     alert("Link kursus berhasil disalin!");
   };
+
+  if (authLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-white dark:bg-charcoal">
+        <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-accent" />
+      </div>
+    );
+  }
 
   if (!course || !enrollment) {
     return (

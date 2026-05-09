@@ -36,7 +36,7 @@ export default function PlatformStatsPage() {
   const { users, deleteDuplicateUsers } = useUserStore();
   const { enrollments, deleteDuplicateEnrollments } = useEnrollmentStore();
   
-  const [activeTab, setActiveTab] = useState<'overview' | 'logs' | 'security'>('overview');
+  const [activeTab, setActiveTab] = useState<'overview' | 'logs' | 'security' | 'vercel' | 'observability'>('overview');
   const [isCleaning, setIsCleaning] = useState(false);
   const [filterCategory, setFilterCategory] = useState<AuditLog['category'] | 'all'>('all');
 
@@ -95,7 +95,7 @@ export default function PlatformStatsPage() {
           <p className="text-coffee-400 mt-1">Real-time infrastructure monitoring and audit control center</p>
         </div>
         <div className="flex items-center gap-3 bg-charcoal-light/50 p-1.5 rounded-2xl border border-charcoal-200 backdrop-blur-md">
-          {(['overview', 'logs', 'security'] as const).map((tab) => (
+          {(['overview', 'logs', 'security', 'vercel', 'observability'] as const).map((tab) => (
             <button
               key={tab}
               onClick={() => setActiveTab(tab)}
@@ -105,7 +105,7 @@ export default function PlatformStatsPage() {
                   : "text-coffee-500 hover:text-white hover:bg-white/5"
               }`}
             >
-              {tab}
+              {tab === 'vercel' ? 'Vercel' : tab === 'observability' ? 'Query Alert' : tab}
             </button>
           ))}
         </div>
@@ -485,6 +485,163 @@ export default function PlatformStatsPage() {
                     ))}
                   </tbody>
                 </table>
+              </div>
+            </div>
+          </motion.div>
+        )}
+
+        {activeTab === 'vercel' && (
+          <motion.div
+            key="vercel"
+            initial={{ opacity: 0, x: 20 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: -20 }}
+            className="space-y-8"
+          >
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              {[
+                { label: "Visitors", value: "1,248", trend: "+12%", color: "text-blue-400" },
+                { label: "Page Views", value: "8,432", trend: "+8%", color: "text-emerald-400" },
+                { label: "Bounce Rate", value: "32.4%", trend: "-2%", color: "text-amber-400" },
+              ].map((m) => (
+                <div key={m.label} className="bg-charcoal-light/30 border border-charcoal-200 p-8 rounded-3xl backdrop-blur-md">
+                  <p className="text-[10px] font-bold text-coffee-500 uppercase tracking-widest mb-2">{m.label}</p>
+                  <div className="flex items-end justify-between">
+                    <h3 className="text-3xl font-bold text-white">{m.value}</h3>
+                    <span className={`text-xs font-bold ${m.trend.startsWith('+') ? 'text-emerald-400' : 'text-red-400'}`}>
+                      {m.trend}
+                    </span>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+              <div className="bg-charcoal-light/30 border border-charcoal-200 rounded-3xl p-8 backdrop-blur-md">
+                <h3 className="text-xl font-bold text-white mb-6">Real Experience Score</h3>
+                <div className="space-y-6">
+                  {[
+                    { label: "First Contentful Paint", value: "1.2s", status: "Great" },
+                    { label: "Largest Contentful Paint", value: "2.4s", status: "Great" },
+                    { label: "Cumulative Layout Shift", value: "0.05", status: "Great" },
+                    { label: "First Input Delay", value: "12ms", status: "Great" },
+                  ].map((perf) => (
+                    <div key={perf.label} className="flex items-center justify-between group">
+                      <div>
+                        <p className="text-sm font-medium text-white group-hover:text-accent transition-colors">{perf.label}</p>
+                        <p className="text-xs text-coffee-500">{perf.status}</p>
+                      </div>
+                      <div className="text-right">
+                        <p className="text-lg font-bold text-white">{perf.value}</p>
+                        <div className="w-24 h-1.5 bg-charcoal rounded-full mt-1 overflow-hidden">
+                          <div className="h-full bg-emerald-500 w-[90%]" />
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <div className="bg-charcoal-light/30 border border-charcoal-200 rounded-3xl p-8 backdrop-blur-md">
+                <h3 className="text-xl font-bold text-white mb-6">Top Pages</h3>
+                <div className="space-y-4">
+                  {[
+                    { path: "/", views: "2.4k", visitors: "1.1k" },
+                    { path: "/explore", views: "1.8k", visitors: "840" },
+                    { path: "/course/1", views: "940", visitors: "420" },
+                    { path: "/dashboard", views: "650", visitors: "210" },
+                  ].map((page) => (
+                    <div key={page.path} className="flex items-center justify-between p-4 bg-charcoal/30 rounded-2xl border border-white/5">
+                      <code className="text-xs text-accent font-mono">{page.path}</code>
+                      <div className="flex gap-6">
+                        <div className="text-right">
+                          <p className="text-xs font-bold text-white">{page.views}</p>
+                          <p className="text-[10px] text-coffee-500 uppercase">Views</p>
+                        </div>
+                        <div className="text-right">
+                          <p className="text-xs font-bold text-white">{page.visitors}</p>
+                          <p className="text-[10px] text-coffee-500 uppercase">Visitors</p>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </motion.div>
+        )}
+
+        {activeTab === 'observability' && (
+          <motion.div
+            key="observability"
+            initial={{ opacity: 0, x: 20 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: -20 }}
+            className="space-y-8"
+          >
+            <div className="bg-charcoal-light/30 border border-charcoal-200 rounded-3xl p-8 backdrop-blur-md">
+              <div className="flex items-center justify-between mb-8">
+                <div>
+                  <h3 className="text-xl font-bold text-white">Observability Query Alerts</h3>
+                  <p className="text-sm text-coffee-500">Intelligent system anomalies and query pattern detection</p>
+                </div>
+                <div className="flex gap-2">
+                  <span className="px-3 py-1 rounded-full bg-emerald-500/10 text-emerald-400 text-[10px] font-bold uppercase border border-emerald-500/20">4 Active Alerts</span>
+                </div>
+              </div>
+
+              <div className="space-y-4">
+                {[
+                  { title: "High Latency on Auth API", severity: "high", time: "2m ago", desc: "Average latency exceeded 500ms threshold for /api/auth" },
+                  { title: "Database Query Spike", severity: "medium", time: "15m ago", desc: "Unusual number of SELECT queries detected on 'courses' table" },
+                  { title: "Unusual User Login Pattern", severity: "low", time: "1h ago", desc: "Detected multiple login attempts from new geographic location" },
+                  { title: "Memory Threshold Warning", severity: "low", time: "4h ago", desc: "System memory usage reached 85% of allocated capacity" },
+                ].map((alert) => (
+                  <div key={alert.title} className="p-5 bg-charcoal/30 rounded-2xl border border-white/5 flex items-start justify-between group hover:bg-charcoal/50 transition-all">
+                    <div className="flex gap-4">
+                      <div className={`mt-1 w-2 h-2 rounded-full ${
+                        alert.severity === 'high' ? 'bg-red-500 shadow-[0_0_10px_rgba(239,68,68,0.5)]' :
+                        alert.severity === 'medium' ? 'bg-amber-500' : 'bg-blue-500'
+                      }`} />
+                      <div>
+                        <h4 className="text-sm font-bold text-white group-hover:text-accent transition-colors">{alert.title}</h4>
+                        <p className="text-xs text-coffee-500 mt-1 leading-relaxed">{alert.desc}</p>
+                      </div>
+                    </div>
+                    <span className="text-[10px] font-bold text-coffee-600 uppercase whitespace-nowrap">{alert.time}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <div className="bg-charcoal-light/30 border border-charcoal-200 rounded-3xl p-8 backdrop-blur-md">
+              <h3 className="text-xl font-bold text-white mb-6">Database Intelligence</h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <div className="space-y-4">
+                  <p className="text-xs font-bold text-coffee-400 uppercase tracking-widest">Slowest Queries</p>
+                  {[
+                    { q: "SELECT * FROM enrollments JOIN users...", time: "342ms" },
+                    { q: "UPDATE course_materials SET content...", time: "215ms" },
+                    { q: "SELECT AVG(rating) FROM reviews...", time: "182ms" },
+                  ].map((q) => (
+                    <div key={q.q} className="flex items-center justify-between p-3 bg-charcoal/50 rounded-xl font-mono text-[10px]">
+                      <span className="text-coffee-300 truncate mr-4">{q.q}</span>
+                      <span className="text-red-400 font-bold">{q.time}</span>
+                    </div>
+                  ))}
+                </div>
+                <div className="space-y-4">
+                  <p className="text-xs font-bold text-coffee-400 uppercase tracking-widest">Storage Analytics</p>
+                  <div className="p-6 bg-charcoal/50 rounded-2xl border border-white/5 flex flex-col justify-center items-center">
+                    <div className="w-32 h-32 rounded-full border-8 border-accent border-t-transparent animate-spin-slow flex items-center justify-center relative">
+                      <div className="absolute inset-0 flex flex-col items-center justify-center rotate-0">
+                        <p className="text-2xl font-bold text-white">64%</p>
+                        <p className="text-[8px] text-coffee-500 uppercase">Utilized</p>
+                      </div>
+                    </div>
+                    <p className="mt-4 text-xs text-coffee-400 text-center">Current DB size: 1.2 GB / 2 GB</p>
+                  </div>
+                </div>
               </div>
             </div>
           </motion.div>
