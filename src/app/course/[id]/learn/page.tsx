@@ -19,7 +19,10 @@ import {
   ChevronDown,
   Clock,
   ArrowLeft,
-  Star
+  Star,
+  Download,
+  ExternalLink,
+  FileDigit
 } from "lucide-react";
 import { useCourseStore, useEnrollmentStore } from "@/lib/store";
 import { useAuth } from "@/lib/auth-context";
@@ -238,6 +241,14 @@ export default function CourseLearnPage() {
           </div>
 
           <div className="flex items-center gap-2">
+            {enrollment.progress === 100 && (
+              <Link
+                href="/certificate"
+                className="flex items-center gap-2 px-3 py-1.5 bg-emerald-500 text-white text-[10px] font-bold rounded-lg hover:bg-emerald-600 transition-all animate-bounce shadow-lg shadow-emerald-500/20"
+              >
+                <Download size={14} /> DOWNLOAD SERTIFIKAT
+              </Link>
+            )}
             <button className="p-2 text-coffee-400 hover:text-coffee-600 dark:hover:text-white">
               <MessageSquare size={18} />
             </button>
@@ -269,10 +280,32 @@ export default function CourseLearnPage() {
                 {activeMaterial.type === 'video' ? (
                   <div className="aspect-video w-full bg-black rounded-3xl overflow-hidden shadow-2xl relative group">
                     <iframe 
-                      src={activeMaterial.content.replace("watch?v=", "embed/")}
+                      src={activeMaterial.content.includes("youtube.com") 
+                        ? activeMaterial.content.replace("watch?v=", "embed/") 
+                        : activeMaterial.content}
                       className="w-full h-full border-0"
                       allowFullScreen
                     />
+                  </div>
+                ) : activeMaterial.type === 'pdf' ? (
+                  <div className="w-full aspect-[3/4] md:aspect-[16/10] bg-coffee-50 dark:bg-charcoal rounded-3xl overflow-hidden border border-coffee-100 dark:border-charcoal-200 shadow-lg relative">
+                    <iframe 
+                      src={activeMaterial.content.includes("drive.google.com") 
+                        ? activeMaterial.content.replace("/view", "/preview")
+                        : activeMaterial.content}
+                      className="w-full h-full border-0"
+                      allow="autoplay"
+                    />
+                    <div className="absolute top-4 right-4 flex gap-2">
+                      <a 
+                        href={activeMaterial.content} 
+                        target="_blank" 
+                        rel="noopener noreferrer"
+                        className="p-2 bg-white/80 dark:bg-charcoal/80 backdrop-blur-md rounded-xl text-coffee-600 dark:text-white shadow-sm hover:text-accent transition-colors"
+                      >
+                        <ExternalLink size={18} />
+                      </a>
+                    </div>
                   </div>
                 ) : (
                   <div className="bg-white dark:bg-charcoal-light rounded-[32px] p-8 md:p-12 border border-coffee-100 dark:border-charcoal-200 shadow-sm min-h-[400px]">

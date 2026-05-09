@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
-import { Plus, Minus, GripVertical, Video, FileText, HelpCircle, Link as LinkIcon, Check, ChevronRight, ChevronLeft, X, AlertTriangle } from "lucide-react";
+import { Plus, Minus, GripVertical, Video, FileText, HelpCircle, Link as LinkIcon, Check, ChevronRight, ChevronLeft, X, AlertTriangle, FileDigit } from "lucide-react";
 import { useAuth } from "@/lib/auth-context";
 import { useCourseStore, useDraftCourseStore } from "@/lib/store";
 import { useCategoryStore } from "@/lib/store";
@@ -32,7 +32,7 @@ export default function CreateCoursePage() {
   const [tagInput, setTagInput] = useState("");
   const [selectedChapter, setSelectedChapter] = useState<string | null>(null);
   const [materialForm, setMaterialForm] = useState({
-    type: "video" as "video" | "article" | "quiz",
+    type: "video" as "video" | "article" | "quiz" | "pdf",
     title: "",
     content: "",
     duration: "",
@@ -455,6 +455,7 @@ export default function CreateCoursePage() {
                       {[
                         { key: "video", label: "Video", icon: Video },
                         { key: "article", label: "Artikel", icon: FileText },
+                        { key: "pdf", label: "PDF/Drive", icon: FileDigit },
                         { key: "quiz", label: "Kuis", icon: HelpCircle },
                       ].map(type => (
                         <button
@@ -513,6 +514,27 @@ export default function CreateCoursePage() {
                   </div>
                 )}
 
+                {materialForm.type === "pdf" && (
+                  <div className="mb-4">
+                    <label className="block text-sm font-medium text-coffee-700 dark:text-coffee-300 mb-1.5">
+                      Link PDF (Google Drive/S3)
+                    </label>
+                    <div className="relative">
+                      <LinkIcon size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-coffee-400" />
+                      <input
+                        type="url"
+                        value={materialForm.content}
+                        onChange={(e) => setMaterialForm({ ...materialForm, content: e.target.value })}
+                        placeholder="https://drive.google.com/file/d/..."
+                        className="w-full pl-10 pr-4 py-3 text-sm bg-coffee-50 dark:bg-charcoal border border-coffee-200 dark:border-charcoal-200 rounded-xl text-coffee-800 dark:text-white focus:outline-none"
+                      />
+                    </div>
+                    <p className="mt-1 text-xs text-coffee-400">
+                      Gunakan link share publik dari Google Drive untuk hasil terbaik.
+                    </p>
+                  </div>
+                )}
+
                 {materialForm.type === "article" && (
                   <div className="mb-4">
                     <label className="block text-sm font-medium text-coffee-700 dark:text-coffee-300 mb-1.5">
@@ -560,6 +582,7 @@ export default function CreateCoursePage() {
                           <div className="flex items-center gap-3">
                             {mat.type === "video" && <Video size={16} className="text-blue-500" />}
                             {mat.type === "article" && <FileText size={16} className="text-emerald-500" />}
+                            {mat.type === "pdf" && <FileDigit size={16} className="text-amber-500" />}
                             {mat.type === "quiz" && <HelpCircle size={16} className="text-purple-500" />}
                             <span className="text-sm text-coffee-700 dark:text-white">{mat.title}</span>
                             {mat.isPreview && (

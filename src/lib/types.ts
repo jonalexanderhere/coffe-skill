@@ -5,7 +5,7 @@
 export type UserRole = 'student' | 'mentor' | 'superadmin';
 export type UserStatus = 'active' | 'inactive' | 'pending' | 'suspended';
 export type CourseStatus = 'draft' | 'pending_review' | 'approved' | 'rejected' | 'published' | 'archived';
-export type MaterialType = 'video' | 'article' | 'quiz' | 'assignment' | 'resource';
+export type MaterialType = 'video' | 'article' | 'quiz' | 'assignment' | 'resource' | 'pdf';
 export type CourseLevel = 'Pemula' | 'Menengah' | 'Lanjutan';
 
 export interface User {
