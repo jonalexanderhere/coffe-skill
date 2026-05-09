@@ -259,32 +259,7 @@ export default function CourseDetailPage() {
                     </div>
                   )}
 
-                  {activeTab === "Review" && (
-                    <div className="space-y-4">
-                      {[
-                        { name: "Andi W.", rating: 5, text: "Kursus yang sangat terstruktur dan mudah dipahami. Sangat recommended!" },
-                        { name: "Maya P.", rating: 5, text: "Materi selalu up-to-date dan relevan dengan industri. Instructor-nya juga sangat responsif." },
-                        { name: "Reno S.", rating: 4, text: "Bagus secara keseluruhan. Berharap ada lebih banyak proyek practise." },
-                      ].map((review, i) => (
-                        <div key={i} className="p-4 bg-coffee-50 dark:bg-charcoal rounded-xl">
-                          <div className="flex items-center gap-3 mb-2">
-                            <div className="w-8 h-8 rounded-full bg-coffee-200 dark:bg-charcoal-200 flex items-center justify-center text-xs font-bold text-coffee-500">
-                              {review.name[0]}
-                            </div>
-                            <div>
-                              <p className="text-sm font-medium text-coffee-700 dark:text-white">{review.name}</p>
-                              <div className="flex gap-0.5">
-                                {Array.from({ length: 5 }).map((_, idx) => (
-                                  <Star key={idx} size={10} className={idx < review.rating ? "text-amber-400 fill-amber-400" : "text-coffee-200"} />
-                                ))}
-                              </div>
-                            </div>
-                          </div>
-                          <p className="text-sm text-coffee-600 dark:text-coffee-300">{review.text}</p>
-                        </div>
-                      ))}
-                    </div>
-                  )}
+
 
                   {activeTab === "Review" && (
                     <div className="space-y-6">
