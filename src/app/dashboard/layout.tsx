@@ -24,12 +24,12 @@ import {
 
 const sidebarLinks = [
   { label: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
-  { label: "Kursus Saya", href: "/dashboard", icon: BookOpen },
+  { label: "Kursus Saya", href: "/dashboard/courses", icon: BookOpen },
   { label: "Sertifikat", href: "/certificate", icon: Award },
-  { label: "Wishlist", href: "/dashboard", icon: Heart },
-  { label: "Riwayat", href: "/dashboard", icon: History },
+  { label: "Wishlist", href: "/dashboard/wishlist", icon: Heart },
+  { label: "Riwayat", href: "/dashboard/history", icon: History },
   { label: "Diskusi", href: "/community", icon: MessageCircle },
-  { label: "Kalender", href: "/dashboard", icon: Calendar },
+  { label: "Kalender", href: "/dashboard/calendar", icon: Calendar },
   { label: "Pengaturan", href: "/settings", icon: Settings },
 ];
 

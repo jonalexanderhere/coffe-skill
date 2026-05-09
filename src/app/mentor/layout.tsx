@@ -26,9 +26,9 @@ const sidebarLinks = [
   { label: "Kursus Saya", href: "/mentor/courses", icon: BookOpen },
   { label: "Buat Kursus", href: "/mentor/courses/create", icon: Video },
   { label: "Siswa Saya", href: "/mentor/students", icon: Users },
-  { label: "Kuis & Tugas", href: "/mentor/courses", icon: FileText },
+  { label: "Kuis & Tugas", href: "/mentor/assignments", icon: FileText },
   { label: "Sertifikat", href: "/certificate", icon: Award },
-  { label: "Pendapatan", href: "/mentor", icon: DollarSign },
+  { label: "Pendapatan", href: "/mentor/revenue", icon: DollarSign },
   { label: "Pengaturan", href: "/settings", icon: Settings },
 ];
 

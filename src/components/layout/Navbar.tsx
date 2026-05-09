@@ -127,7 +127,7 @@ export default function Navbar() {
                         </div>
                         
                         <Link
-                          href="/dashboard"
+                          href={user?.role === 'superadmin' ? '/superadmin' : user?.role === 'mentor' ? '/mentor' : '/dashboard'}
                           onClick={() => setProfileOpen(false)}
                           className="flex items-center gap-2.5 px-3 py-2 text-sm text-coffee-600 dark:text-coffee-300 hover:bg-coffee-50 dark:hover:bg-charcoal-light rounded-xl transition-colors"
                         >
