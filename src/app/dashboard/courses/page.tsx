@@ -48,7 +48,7 @@ export default function MyCoursesPage() {
                 )}
                 <div className="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
                   <Link 
-                    href={`/course/${item.courseId}`}
+                    href={`/course/${item.courseId}/learn`}
                     className="w-12 h-12 rounded-full bg-accent text-white flex items-center justify-center shadow-lg transform translate-y-4 group-hover:translate-y-0 transition-transform"
                   >
                     <Play size={20} className="fill-current" />
@@ -80,7 +80,7 @@ export default function MyCoursesPage() {
                 </div>
 
                 <Link 
-                  href={`/course/${item.courseId}`}
+                  href={`/course/${item.courseId}/learn`}
                   className="mt-6 w-full flex items-center justify-center gap-2 py-3 text-sm font-semibold text-white bg-accent hover:bg-accent-hover rounded-xl transition-colors shadow-sm"
                 >
                   Lanjutkan Belajar

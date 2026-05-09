@@ -341,7 +341,7 @@ export default function CourseDetailPage() {
                     if (course.isFree) {
                       enrollUser(user.id, course.id);
                       alert("Berhasil terdaftar di kursus!");
-                      router.push("/dashboard/courses");
+                      router.push(`/course/${course.id}/learn`);
                     } else {
                       alert("Sistem pembayaran sedang dalam pemeliharaan (Maintenance). Silakan coba kursus gratis.");
                     }
