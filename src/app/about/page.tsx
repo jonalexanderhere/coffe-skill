@@ -58,10 +58,10 @@ export default function AboutPage() {
           <div className="bg-coffee-800 dark:bg-charcoal-light rounded-3xl p-10 lg:p-14 mb-20">
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-8">
               {[
-                { value: "12.5k+", label: "Siswa Aktif" },
-                { value: "200+", label: "Kursus Tersedia" },
-                { value: "45+", label: "Mentor Expert" },
-                { value: "94%", label: "Tingkat Kelulusan" },
+                { value: "0", label: "Siswa Aktif" },
+                { value: "0", label: "Kursus Tersedia" },
+                { value: "2", label: "Mentor Expert" },
+                { value: "100%", label: "Tingkat Kelulusan" },
               ].map((stat) => (
                 <div key={stat.label} className="text-center">
                   <p className="text-3xl font-bold text-white mb-1" style={{ fontFamily: "var(--font-poppins)" }}>{stat.value}</p>
