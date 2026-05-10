@@ -15,8 +15,13 @@ import {
   Play,
   Trophy,
   Lock,
+  Search,
+  Sparkles,
+  Calendar,
+  Zap
 } from "lucide-react";
 import Link from "next/link";
+import Image from "next/image";
 import { useAuth } from "@/lib/auth-context";
 import { useCourseStore } from "@/lib/store";
 import { useEnrollmentStore } from "@/lib/store";
@@ -33,13 +38,13 @@ export default function DashboardPage() {
     return {
       id: e.courseId,
       title: course?.title || "Unknown Course",
+      thumbnail: course?.thumbnail,
       progress: e.progress || 0,
       lastAccessed: e.lastAccessedAt,
       nextLesson: course?.chapters?.[0]?.materials?.[0]?.title || "Pelajari materi",
     };
   });
 
-  // Calculate stats from real data
   const stats = {
     coursesEnrolled: userEnrollments.length,
     coursesCompleted: userEnrollments.filter(e => e.progress === 100).length,
@@ -48,286 +53,327 @@ export default function DashboardPage() {
     hoursLearned: userEnrollments.reduce((acc, curr) => acc + (curr.progress > 0 ? 2 : 0), 0),
   };
 
-  const recentActivity = userEnrollments.length > 0 ? [
-    { type: "lesson", title: "Berhasil terdaftar di kursus", time: "Baru saja", icon: "CheckCircle" },
-  ] : [];
-
-  const achievements = [
-    { name: "Pemula Cerdas", description: "Daftar di kursus pertama", unlocked: userEnrollments.length > 0 },
-    { name: "Pembelajar Aktif", description: "Selesaikan 5 lesson", unlocked: userEnrollments.some(e => e.progress > 50) },
-    { name: "Sertifikat Pertama", description: "Selesaikan satu kursus penuh", unlocked: stats.certificates > 0 },
-  ];
-
-  // Calculate Weekly Activity from real dailyActivity log
-  const getWeeklyActivity = () => {
-    const days = ["Sen", "Sel", "Rab", "Kam", "Jum", "Sab", "Min"];
-    const today = new Date();
-    const last7Days = Array.from({ length: 7 }, (_, i) => {
-      const d = new Date();
-      d.setDate(today.getDate() - (6 - i));
-      return d.toISOString().split('T')[0];
-    });
-
-    return last7Days.map((dateStr, i) => {
-      const dayName = days[new Date(dateStr).getDay() === 0 ? 6 : new Date(dateStr).getDay() - 1];
-      let totalCompletions = 0;
-      userEnrollments.forEach(e => {
-        const dayData = e.dailyActivity?.find(d => d.date === dateStr);
-        if (dayData) totalCompletions += dayData.count;
-      });
-      return { day: dayName, hours: totalCompletions * 0.5 }; // Assume 0.5 hours per material
-    });
+  const getGreeting = () => {
+    const hour = new Date().getHours();
+    if (hour < 12) return "Selamat Pagi";
+    if (hour < 15) return "Selamat Siang";
+    if (hour < 18) return "Selamat Sore";
+    return "Selamat Malam";
   };
 
-  const weeklyActivityData = getWeeklyActivity();
-
   return (
-    <div className="max-w-6xl mx-auto space-y-8">
-      {/* Welcome & Search */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
-        <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }}>
-          <h1 className="text-3xl font-bold text-coffee-800 dark:text-white tracking-tight" style={{ fontFamily: "var(--font-poppins)" }}>
-            Halo, {user?.name?.split(" ")[0] || "Siswa"}! 👋
-          </h1>
-          <p className="text-sm text-coffee-500 dark:text-coffee-400 mt-1">
-            {userEnrollments.length > 0 
-              ? `Kamu sudah menyelesaikan ${stats.coursesCompleted} kursus sejauh ini. Terus semangat!` 
-              : "Siap untuk mempelajari skill baru hari ini?"}
-          </p>
-        </motion.div>
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-20">
+      {/* Premium Hero Header */}
+      <section className="relative mt-8 mb-12 rounded-[3rem] overflow-hidden bg-coffee-900 text-white p-8 md:p-12 shadow-2xl shadow-coffee-950/20">
+        <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')] opacity-10" />
+        <div className="absolute top-0 right-0 w-1/2 h-full bg-gradient-to-l from-accent/20 to-transparent pointer-events-none" />
         
-        <div className="flex items-center gap-3">
-          <div className="relative group">
-            <div className="absolute inset-0 bg-accent/20 blur-xl opacity-0 group-hover:opacity-100 transition-opacity" />
-            <Link 
-              href="/explore" 
-              className="relative flex items-center gap-2 px-6 py-3 bg-accent text-white rounded-2xl font-bold text-sm hover:bg-accent-hover transition-all active:scale-95 shadow-lg shadow-accent/25"
-            >
-              Explore Kursus Baru
-              <ArrowRight size={18} />
-            </Link>
-          </div>
-        </div>
-      </div>
-
-      {/* Stats Cards with Premium Look */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-6">
-        {[
-          { label: "Kursus Diikuti", value: stats.coursesEnrolled, icon: BookOpen, color: "from-blue-500 to-indigo-600", lightColor: "text-blue-500" },
-          { label: "Menit Belajar", value: stats.hoursLearned * 60, icon: Clock, color: "from-emerald-500 to-teal-600", lightColor: "text-emerald-500" },
-          { label: "Sertifikat", value: stats.certificates, icon: Award, color: "from-amber-500 to-orange-600", lightColor: "text-amber-500" },
-          { label: "Daily Streak", value: stats.currentStreak, icon: Flame, color: "from-red-500 to-rose-600", lightColor: "text-red-500" },
-        ].map((stat, i) => (
-          <motion.div
-            key={stat.label}
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: i * 0.1 }}
-            className="group relative bg-white dark:bg-charcoal-light rounded-[2rem] border border-coffee-100 dark:border-charcoal-200 p-6 overflow-hidden hover:shadow-xl hover:shadow-coffee-100/50 dark:hover:shadow-none transition-all duration-500"
+        <div className="relative z-10 flex flex-col md:flex-row justify-between items-center gap-8">
+          <motion.div 
+            initial={{ opacity: 0, x: -30 }} 
+            animate={{ opacity: 1, x: 0 }}
+            className="flex-1"
           >
-            <div className={`absolute top-0 right-0 w-24 h-24 bg-gradient-to-br ${stat.color} opacity-[0.03] group-hover:opacity-[0.08] transition-opacity rounded-bl-[4rem]`} />
-            <div className={`w-12 h-12 rounded-2xl bg-gradient-to-br ${stat.color} p-3 mb-4 shadow-lg shadow-black/5`}>
-              <stat.icon size={24} className="text-white" />
+            <div className="flex items-center gap-3 mb-4">
+              <span className="px-3 py-1 bg-accent/20 border border-accent/30 rounded-full text-[10px] font-black uppercase tracking-[0.2em] text-accent">
+                STUDENT DASHBOARD
+              </span>
+              <span className="w-1 h-1 rounded-full bg-coffee-400" />
+              <span className="text-[10px] font-bold text-coffee-400 uppercase tracking-widest flex items-center gap-1">
+                <Calendar size={12} /> {new Date().toLocaleDateString('id-ID', { weekday: 'long', day: 'numeric', month: 'long' })}
+              </span>
             </div>
-            <div>
-              <p className="text-3xl font-black text-coffee-800 dark:text-white tracking-tight">{stat.value}</p>
-              <p className="text-xs font-bold text-coffee-400 dark:text-coffee-500 uppercase tracking-widest mt-1">{stat.label}</p>
+            <h1 className="text-4xl md:text-5xl font-black mb-4 tracking-tight leading-tight">
+              {getGreeting()}, <span className="text-accent">{user?.name?.split(" ")[0]}!</span>
+            </h1>
+            <p className="text-coffee-300 max-w-lg text-lg leading-relaxed mb-8">
+              {userEnrollments.length > 0 
+                ? "Lanjutkan perjalanan belajarmu. Kamu sudah berada di jalur yang tepat untuk menjadi expert!" 
+                : "Ayo mulai belajar hari ini. Pilih kursus favoritmu dan raih sertifikat pertamamu."}
+            </p>
+            
+            <div className="flex flex-wrap gap-4">
+              <Link 
+                href="/dashboard/courses" 
+                className="px-8 py-4 bg-accent text-white rounded-2xl font-black text-sm hover:bg-accent-hover transition-all shadow-xl shadow-accent/30 active:scale-95 flex items-center gap-2"
+              >
+                <Play size={18} fill="currentColor" />
+                Lanjutkan Belajar
+              </Link>
+              <Link 
+                href="/explore" 
+                className="px-8 py-4 bg-white/10 hover:bg-white/20 backdrop-blur-md border border-white/10 text-white rounded-2xl font-black text-sm transition-all active:scale-95 flex items-center gap-2"
+              >
+                <Search size={18} />
+                Explore Materi
+              </Link>
             </div>
           </motion.div>
-        ))}
-      </div>
 
-      <div className="grid lg:grid-cols-3 gap-8">
-        {/* Main Content: Progress Path */}
-        <div className="lg:col-span-2 space-y-8">
+          {/* Featured Achievement Card */}
+          <motion.div 
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ delay: 0.2 }}
+            className="w-full md:w-80 bg-white/5 backdrop-blur-2xl border border-white/10 rounded-[2.5rem] p-6 relative group"
+          >
+            <div className="absolute -top-6 -right-6 w-20 h-20 bg-accent rounded-full blur-[40px] opacity-20 group-hover:opacity-40 transition-opacity" />
+            <div className="flex items-center gap-4 mb-6">
+              <div className="w-12 h-12 rounded-2xl bg-accent flex items-center justify-center shadow-lg shadow-accent/20">
+                <Trophy size={24} className="text-white" />
+              </div>
+              <div>
+                <p className="text-[10px] font-black text-accent uppercase tracking-[0.2em]">Rank Saat Ini</p>
+                <h4 className="text-lg font-bold">Rising Scholar</h4>
+              </div>
+            </div>
+            
+            <div className="space-y-4">
+              <div className="flex justify-between items-end">
+                <p className="text-xs text-coffee-400 font-bold uppercase">Progress Level</p>
+                <p className="text-sm font-black text-accent">75%</p>
+              </div>
+              <div className="h-2 bg-white/10 rounded-full overflow-hidden">
+                <div className="h-full bg-accent rounded-full w-3/4" />
+              </div>
+              <p className="text-[10px] text-coffee-400 italic">250 XP lagi untuk naik ke level Senior Learner</p>
+            </div>
+          </motion.div>
+        </div>
+      </section>
+
+      {/* Grid Content */}
+      <div className="grid lg:grid-cols-4 gap-8">
+        
+        {/* Left Column: Courses & Stats */}
+        <div className="lg:col-span-3 space-y-10">
+          
+          {/* Real-time Stats Strip */}
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            {[
+              { label: "Active Courses", value: stats.coursesEnrolled, icon: BookOpen, color: "text-blue-500", bg: "bg-blue-500/10" },
+              { label: "Learning Minutes", value: stats.hoursLearned * 60, icon: Clock, color: "text-emerald-500", bg: "bg-emerald-500/10" },
+              { label: "Certificates", value: stats.certificates, icon: Award, color: "text-amber-500", bg: "bg-amber-500/10" },
+              { label: "Day Streak", value: stats.currentStreak, icon: Flame, color: "text-red-500", bg: "bg-red-500/10" },
+            ].map((s, i) => (
+              <motion.div 
+                key={s.label}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.4 + i * 0.1 }}
+                className="bg-white dark:bg-charcoal-light rounded-[2rem] p-6 border border-coffee-100 dark:border-charcoal-200 flex flex-col items-center text-center group hover:border-accent/30 transition-all"
+              >
+                <div className={`w-12 h-12 rounded-2xl ${s.bg} ${s.color} flex items-center justify-center mb-3 group-hover:scale-110 transition-transform`}>
+                  <s.icon size={24} />
+                </div>
+                <h3 className="text-2xl font-black text-coffee-800 dark:text-white">{s.value}</h3>
+                <p className="text-[10px] font-bold text-coffee-400 uppercase tracking-widest mt-1">{s.label}</p>
+              </motion.div>
+            ))}
+          </div>
+
+          {/* Continue Learning Section */}
           <section>
-            <div className="flex items-center justify-between mb-6">
-              <h2 className="text-xl font-bold text-coffee-800 dark:text-white tracking-tight">Lanjutkan Belajar</h2>
-              <Link href="/dashboard/courses" className="text-xs font-bold text-accent uppercase tracking-widest hover:underline">
+            <div className="flex items-center justify-between mb-8">
+              <div className="flex items-center gap-3">
+                <div className="w-2 h-8 bg-accent rounded-full" />
+                <h2 className="text-2xl font-black text-coffee-800 dark:text-white tracking-tight">Kursus Berjalan</h2>
+              </div>
+              <Link href="/dashboard/courses" className="px-4 py-2 bg-coffee-50 dark:bg-charcoal rounded-xl text-[10px] font-black text-coffee-500 uppercase tracking-widest border border-coffee-100 dark:border-charcoal-200 hover:bg-accent/10 hover:text-accent hover:border-accent/20 transition-all">
                 Lihat Semua
               </Link>
             </div>
 
-            <div className="grid gap-4">
-              {userEnrollments.length > 0 ? (
-                enrolledCoursesData.map((course, i) => (
+            {userEnrollments.length > 0 ? (
+              <div className="grid md:grid-cols-2 gap-6">
+                {enrolledCoursesData.slice(0, 4).map((course, i) => (
                   <motion.div
                     key={course.id}
-                    initial={{ opacity: 0, x: -20 }}
-                    animate={{ opacity: 1, x: 0 }}
-                    transition={{ delay: 0.3 + i * 0.1 }}
+                    initial={{ opacity: 0, scale: 0.95 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    transition={{ delay: 0.6 + i * 0.1 }}
+                    className="group bg-white dark:bg-charcoal-light rounded-[2.5rem] border border-coffee-100 dark:border-charcoal-200 overflow-hidden hover:border-accent/40 transition-all duration-500"
                   >
-                    <Link
-                      href={`/course/${course.id}`}
-                      className="group relative flex items-center gap-6 p-6 bg-white dark:bg-charcoal-light rounded-[2rem] border border-coffee-100 dark:border-charcoal-200 hover:border-accent/30 dark:hover:border-accent/30 transition-all duration-500"
-                    >
-                      <div className="w-16 h-16 rounded-2xl bg-coffee-50 dark:bg-charcoal flex items-center justify-center shrink-0 group-hover:scale-110 transition-transform duration-500 border border-coffee-100 dark:border-charcoal-200">
-                        <Code2 size={28} className="text-accent" />
-                      </div>
-                      
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2 mb-1">
-                          <span className="text-[10px] font-bold text-accent uppercase tracking-widest">In Progress</span>
-                          <span className="text-[10px] text-coffee-400">•</span>
-                          <span className="text-[10px] text-coffee-400 font-bold uppercase tracking-widest">Update 2j yang lalu</span>
+                    <div className="flex p-5 gap-5">
+                      <div className="relative w-24 h-24 rounded-2xl overflow-hidden shrink-0">
+                        <Image 
+                          src={course.thumbnail || "/course-placeholder.jpg"} 
+                          alt={course.title} 
+                          fill 
+                          className="object-cover group-hover:scale-110 transition-transform duration-700" 
+                        />
+                        <div className="absolute inset-0 bg-accent/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                          <Play size={24} fill="white" className="text-white" />
                         </div>
-                        <h3 className="text-lg font-bold text-coffee-800 dark:text-white truncate group-hover:text-accent transition-colors">
-                          {course.title}
-                        </h3>
-                        <p className="text-xs text-coffee-500 mt-1">
-                          Selanjutnya: <span className="font-semibold text-coffee-700 dark:text-coffee-300">{course.nextLesson}</span>
-                        </p>
-                        
-                        <div className="mt-4 flex items-center gap-4">
-                          <div className="flex-1 h-2 bg-coffee-50 dark:bg-charcoal rounded-full overflow-hidden border border-coffee-100 dark:border-charcoal-200">
+                      </div>
+                      <div className="flex-1 min-w-0 flex flex-col justify-between">
+                        <div>
+                          <h3 className="text-md font-bold text-coffee-800 dark:text-white truncate group-hover:text-accent transition-colors">
+                            {course.title}
+                          </h3>
+                          <p className="text-[10px] text-coffee-400 font-bold uppercase mt-1 truncate">
+                            Next: {course.nextLesson}
+                          </p>
+                        </div>
+                        <div className="space-y-2">
+                          <div className="flex justify-between items-end">
+                            <span className="text-[10px] font-black text-accent">{course.progress}% Completed</span>
+                          </div>
+                          <div className="h-1.5 bg-coffee-50 dark:bg-charcoal rounded-full overflow-hidden">
                             <motion.div 
                               initial={{ width: 0 }}
                               animate={{ width: `${course.progress}%` }}
-                              transition={{ duration: 1, delay: 0.5 }}
-                              className="h-full bg-gradient-to-r from-accent to-accent-hover rounded-full" 
+                              className="h-full bg-accent"
                             />
                           </div>
-                          <span className="text-sm font-black text-accent">{course.progress}%</span>
                         </div>
                       </div>
-
-                      <div className="hidden sm:flex w-12 h-12 rounded-full bg-accent/5 items-center justify-center group-hover:bg-accent group-hover:text-white transition-all duration-500">
-                        <Play size={20} className="ml-1" />
-                      </div>
+                    </div>
+                    <Link 
+                      href={`/course/${course.id}`}
+                      className="w-full py-3 bg-coffee-50 dark:bg-charcoal-200/50 flex items-center justify-center gap-2 text-[10px] font-black uppercase tracking-widest text-coffee-500 hover:bg-accent hover:text-white transition-all"
+                    >
+                      Buka Materi <ArrowRight size={14} />
                     </Link>
                   </motion.div>
-                ))
-              ) : (
-                <div className="p-12 text-center bg-white dark:bg-charcoal-light rounded-[2.5rem] border border-coffee-100 dark:border-charcoal-200 border-dashed">
-                  <div className="w-20 h-20 bg-coffee-50 dark:bg-charcoal rounded-3xl flex items-center justify-center mx-auto mb-6">
-                    <BookOpen size={32} className="text-coffee-200 dark:text-charcoal-200" />
-                  </div>
-                  <h3 className="text-xl font-bold text-coffee-800 dark:text-white mb-2">Belum ada kursus aktif</h3>
-                  <p className="text-sm text-coffee-500 mb-8 max-w-xs mx-auto">Mulai perjalanan belajarmu hari ini dan kuasai skill masa depan.</p>
-                  <Link href="/explore" className="inline-flex items-center gap-2 px-8 py-3 bg-accent text-white rounded-2xl font-bold text-sm hover:bg-accent-hover transition-all">
-                    Explore Kursus
-                  </Link>
+                ))}
+              </div>
+            ) : (
+              <div className="py-20 text-center bg-white dark:bg-charcoal-light rounded-[3rem] border-2 border-dashed border-coffee-100 dark:border-charcoal-200">
+                <div className="w-20 h-20 bg-accent/10 rounded-full flex items-center justify-center mx-auto mb-6">
+                  <Zap size={32} className="text-accent" />
                 </div>
-              )}
-            </div>
+                <h3 className="text-xl font-bold mb-2">Belum ada kursus aktif</h3>
+                <p className="text-coffee-500 mb-8">Ambil langkah pertamamu sekarang.</p>
+                <Link href="/explore" className="px-8 py-3 bg-accent text-white rounded-2xl font-bold">Explore Kursus</Link>
+              </div>
+            )}
           </section>
 
-          {/* Activity Visualization */}
-          <section className="bg-white dark:bg-charcoal-light rounded-[2.5rem] border border-coffee-100 dark:border-charcoal-200 p-8">
-            <div className="flex items-center justify-between mb-8">
-              <div>
-                <h3 className="text-xl font-bold text-coffee-800 dark:text-white tracking-tight">Aktivitas Belajar</h3>
-                <p className="text-xs text-coffee-400 mt-1 uppercase tracking-widest font-bold">Minggu Terakhir • Total {stats.hoursLearned} Jam</p>
-              </div>
-              <div className="p-3 bg-coffee-50 dark:bg-charcoal rounded-2xl text-accent">
-                <BarChart3 size={20} />
-              </div>
+          {/* Daily Challenge / Activity Visualization */}
+          <section className="bg-white dark:bg-charcoal-light rounded-[3rem] border border-coffee-100 dark:border-charcoal-200 p-10 relative overflow-hidden">
+            <div className="absolute top-0 right-0 p-8 opacity-[0.03] pointer-events-none">
+              <Sparkles size={120} />
             </div>
-            
-            <div className="flex items-end justify-between gap-4 h-40 pt-4">
-              {weeklyActivityData.map((item, i) => (
-                <div key={item.day} className="flex-1 flex flex-col items-center gap-3 group">
-                  <div className="w-full relative h-full flex flex-col justify-end">
-                    <motion.div
-                      initial={{ height: 0 }}
-                      animate={{ height: `${item.hours > 0 ? Math.min((item.hours / 6) * 100, 100) : 5}%` }}
-                      transition={{ delay: 0.5 + i * 0.05, duration: 0.8 }}
-                      className="w-full max-w-[40px] mx-auto relative"
-                    >
-                      <div className={`absolute inset-0 rounded-xl transition-all duration-300 ${
-                        item.hours > 0 ? "bg-accent/20 group-hover:bg-accent/30" : "bg-coffee-100 dark:bg-charcoal-200"
-                      }`} />
-                      {item.hours > 0 && (
-                        <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-accent to-accent-hover rounded-xl shadow-[0_0_15px_rgba(212,163,115,0.3)]" style={{ height: "100%" }} />
-                      )}
-                    </motion.div>
-                  </div>
-                  <span className="text-[10px] font-black uppercase tracking-widest text-coffee-400 group-hover:text-accent transition-colors">{item.day}</span>
+            <div className="flex flex-col md:flex-row gap-10 items-center">
+              <div className="flex-1">
+                <div className="inline-flex items-center gap-2 px-3 py-1 bg-emerald-500/10 text-emerald-500 rounded-full text-[10px] font-black uppercase tracking-widest mb-4">
+                  <Zap size={12} /> Daily Quest
                 </div>
-              ))}
+                <h3 className="text-2xl font-black text-coffee-800 dark:text-white mb-3 tracking-tight">Kuasai satu materi hari ini!</h3>
+                <p className="text-coffee-500 dark:text-coffee-400 mb-6 leading-relaxed">
+                  Konsistensi adalah kunci kesuksesan. Selesaikan minimal satu lesson hari ini untuk mempertahankan streak belajarmu.
+                </p>
+                <div className="flex items-center gap-6">
+                  <div className="flex -space-x-3">
+                    {[1,2,3,4].map(i => (
+                      <div key={i} className="w-10 h-10 rounded-full border-2 border-white dark:border-charcoal-light bg-coffee-100 flex items-center justify-center overflow-hidden">
+                        <img src={`https://i.pravatar.cc/100?u=${i+10}`} alt="user" />
+                      </div>
+                    ))}
+                    <div className="w-10 h-10 rounded-full border-2 border-white dark:border-charcoal-light bg-accent flex items-center justify-center text-[10px] font-black text-white">
+                      +12k
+                    </div>
+                  </div>
+                  <p className="text-[10px] font-bold text-coffee-400 uppercase tracking-widest">Siswa lain sedang belajar</p>
+                </div>
+              </div>
+              <div className="w-full md:w-64 flex flex-col items-center text-center p-8 bg-coffee-50 dark:bg-charcoal rounded-[2.5rem] border border-coffee-100 dark:border-charcoal-200 shadow-inner">
+                <div className="relative w-24 h-24 mb-4">
+                  <svg className="w-full h-full transform -rotate-90">
+                    <circle cx="48" cy="48" r="40" stroke="currentColor" strokeWidth="8" fill="transparent" className="text-coffee-100 dark:text-charcoal-300" />
+                    <circle cx="48" cy="48" r="40" stroke="currentColor" strokeWidth="8" fill="transparent" strokeDasharray="251.2" strokeDashoffset={251.2 * (1 - 0.4)} className="text-accent" />
+                  </svg>
+                  <div className="absolute inset-0 flex items-center justify-center">
+                    <span className="text-xl font-black text-coffee-800 dark:text-white">40%</span>
+                  </div>
+                </div>
+                <p className="text-[10px] font-black text-coffee-400 uppercase tracking-widest">Progress Hari Ini</p>
+              </div>
             </div>
           </section>
         </div>
 
-        {/* Sidebar: Social & Challenges */}
+        {/* Right Column: Sidebar */}
         <div className="space-y-8">
-          {/* Recent Events/Activity Feed */}
-          <div className="bg-white dark:bg-charcoal-light rounded-[2.5rem] border border-coffee-100 dark:border-charcoal-200 p-8">
-            <h3 className="text-lg font-bold text-coffee-800 dark:text-white mb-6">Aktivitas Terakhir</h3>
-            {recentActivity.length > 0 ? (
-              <div className="space-y-6 relative before:absolute before:left-[11px] before:top-2 before:bottom-2 before:w-px before:bg-coffee-100 dark:before:bg-charcoal-200">
-                {recentActivity.map((activity, i) => {
-                  const IconComp = activity.icon === "CheckCircle" ? CheckCircle : activity.icon === "Award" ? Award : MessageCircle;
-                  return (
-                    <div key={i} className="flex items-start gap-4 relative z-10">
-                      <div className="p-1.5 rounded-full bg-white dark:bg-charcoal-light border border-coffee-100 dark:border-charcoal-200 shadow-sm text-accent">
-                        <IconComp size={12} />
-                      </div>
-                      <div className="min-w-0">
-                        <p className="text-xs font-bold text-coffee-700 dark:text-coffee-200 leading-snug">{activity.title}</p>
-                        <p className="text-[10px] text-coffee-400 mt-1 uppercase tracking-widest font-black">{activity.time}</p>
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            ) : (
-              <div className="text-center py-6">
-                <p className="text-xs text-coffee-400 italic">Belum ada aktivitas baru</p>
-              </div>
-            )}
+          
+          {/* Quick Actions Card */}
+          <div className="bg-accent rounded-[3rem] p-8 text-white shadow-2xl shadow-accent/20 group">
+            <h3 className="text-xl font-black mb-6 tracking-tight">Quick Actions</h3>
+            <div className="grid grid-cols-1 gap-3">
+              <Link href="/dashboard/calendar" className="flex items-center justify-between p-4 bg-white/10 hover:bg-white/20 rounded-2xl transition-all border border-white/5">
+                <div className="flex items-center gap-3">
+                  <Calendar size={18} />
+                  <span className="text-xs font-bold">Jadwal Belajar</span>
+                </div>
+                <ArrowRight size={14} className="opacity-40" />
+              </Link>
+              <Link href="/dashboard/wishlist" className="flex items-center justify-between p-4 bg-white/10 hover:bg-white/20 rounded-2xl transition-all border border-white/5">
+                <div className="flex items-center gap-3">
+                  <Sparkles size={18} />
+                  <span className="text-xs font-bold">Daftar Keinginan</span>
+                </div>
+                <ArrowRight size={14} className="opacity-40" />
+              </Link>
+            </div>
           </div>
 
-          {/* Gamification: Achievements */}
-          <div className="bg-white dark:bg-charcoal-light rounded-[2.5rem] border border-coffee-100 dark:border-charcoal-200 p-8 overflow-hidden relative">
-            <div className="absolute -top-10 -right-10 w-32 h-32 bg-amber-500/5 blur-[50px] rounded-full" />
-            <div className="flex items-center justify-between mb-6">
-              <h3 className="text-lg font-bold text-coffee-800 dark:text-white">Achievements</h3>
-              <Trophy size={18} className="text-amber-500" />
-            </div>
-            <div className="space-y-4">
-              {achievements.map((badge) => (
-                <div
-                  key={badge.name}
-                  className={`group flex items-center gap-4 p-4 rounded-2xl border transition-all duration-300 ${
-                    badge.unlocked 
-                      ? "bg-amber-500/5 border-amber-500/20 hover:bg-amber-500/10" 
-                      : "bg-coffee-50 dark:bg-charcoal-200 border-transparent opacity-50 grayscale"
-                  }`}
-                >
-                  <div className={`w-10 h-10 rounded-xl flex items-center justify-center shrink-0 transition-transform group-hover:scale-110 ${
-                    badge.unlocked ? "bg-amber-500/20 text-amber-500" : "bg-coffee-200 dark:bg-charcoal-300 text-coffee-400"
-                  }`}>
-                    {badge.unlocked ? <Trophy size={18} /> : <Lock size={18} />}
+          {/* Activity Timeline */}
+          <div className="bg-white dark:bg-charcoal-light rounded-[3rem] border border-coffee-100 dark:border-charcoal-200 p-8">
+            <h3 className="text-lg font-bold text-coffee-800 dark:text-white mb-8">Aktivitas Baru</h3>
+            <div className="space-y-8 relative before:absolute before:left-3 before:top-2 before:bottom-2 before:w-0.5 before:bg-coffee-50 dark:before:bg-charcoal-200">
+              {[
+                { title: "Daftar Kursus", desc: "Cyber Security Mastery", time: "Baru saja", icon: CheckCircle, color: "text-emerald-500", bg: "bg-emerald-500/10" },
+                { title: "Badge Terbuka", desc: "Pemula Cerdas", time: "2 jam yang lalu", icon: Award, color: "text-amber-500", bg: "bg-amber-500/10" },
+              ].map((activity, i) => (
+                <div key={i} className="flex items-start gap-4 relative">
+                  <div className={`w-6 h-6 rounded-full ${activity.bg} ${activity.color} flex items-center justify-center z-10 shrink-0 border-4 border-white dark:border-charcoal-light`}>
+                    <activity.icon size={10} />
                   </div>
-                  <div className="min-w-0">
-                    <p className="text-xs font-bold text-coffee-800 dark:text-white">{badge.name}</p>
-                    <p className="text-[10px] text-coffee-500 leading-tight mt-0.5">{badge.description}</p>
+                  <div>
+                    <h4 className="text-xs font-bold text-coffee-800 dark:text-white">{activity.title}</h4>
+                    <p className="text-[10px] text-coffee-500 mt-0.5">{activity.desc}</p>
+                    <p className="text-[9px] font-black text-coffee-300 uppercase tracking-widest mt-2">{activity.time}</p>
                   </div>
                 </div>
               ))}
             </div>
-            <button className="w-full mt-6 py-3 rounded-2xl bg-coffee-50 dark:bg-charcoal border border-coffee-100 dark:border-charcoal-200 text-xs font-bold text-coffee-600 dark:text-coffee-400 uppercase tracking-widest hover:bg-coffee-100 dark:hover:bg-charcoal-light transition-all">
-              Lihat Semua Badge
+          </div>
+
+          {/* Gamification: Badges */}
+          <div className="bg-white dark:bg-charcoal-light rounded-[3rem] border border-coffee-100 dark:border-charcoal-200 p-8 overflow-hidden">
+            <div className="flex items-center justify-between mb-8">
+              <h3 className="text-lg font-bold text-coffee-800 dark:text-white">Badges</h3>
+              <Trophy size={18} className="text-amber-500" />
+            </div>
+            <div className="grid grid-cols-3 gap-4">
+              {[1, 2, 3, 4, 5, 6].map((i) => (
+                <div key={i} className={`aspect-square rounded-2xl flex items-center justify-center transition-all ${
+                  i <= 3 ? "bg-amber-500/10 text-amber-500 border border-amber-500/20" : "bg-coffee-50 dark:bg-charcoal grayscale opacity-30 border border-transparent"
+                }`}>
+                  <Award size={24} />
+                </div>
+              ))}
+            </div>
+            <button className="w-full mt-8 py-3 bg-coffee-50 dark:bg-charcoal rounded-2xl text-[10px] font-black uppercase tracking-widest text-coffee-500 hover:bg-accent hover:text-white transition-all">
+              Lihat Koleksi
             </button>
           </div>
 
-          {/* Social: Live Community */}
-          <div className="bg-gradient-to-br from-coffee-800 to-coffee-900 rounded-[2.5rem] p-8 text-white relative overflow-hidden group">
-            <div className="absolute inset-0 bg-[url('https://www.transparenttextures.com/patterns/carbon-fibre.png')] opacity-10" />
-            <div className="relative z-10">
-              <div className="flex items-center gap-2 mb-4">
-                <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-                <span className="text-[10px] font-black uppercase tracking-widest text-emerald-400">Live Community</span>
-              </div>
-              <h3 className="text-lg font-bold mb-2">Butuh Bantuan?</h3>
-              <p className="text-xs text-coffee-300 leading-relaxed mb-6">Bergabung dengan diskusi materi bersama 12.000+ siswa lainnya di Forum.</p>
-              <Link href="/community" className="flex items-center justify-center gap-2 w-full py-3 bg-white text-coffee-900 rounded-2xl font-black text-xs uppercase tracking-widest hover:bg-coffee-100 transition-all">
-                Buka Community
-                <MessageCircle size={14} />
-              </Link>
+          {/* Community Pulse */}
+          <div className="bg-charcoal text-white rounded-[3rem] p-8 relative overflow-hidden group">
+            <div className="absolute bottom-0 right-0 p-4 opacity-5 group-hover:scale-125 transition-transform duration-1000">
+              <MessageCircle size={100} />
             </div>
+            <h3 className="text-lg font-bold mb-2">Community Pulse</h3>
+            <p className="text-[10px] text-coffee-400 mb-6 uppercase tracking-widest font-black flex items-center gap-2">
+              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" /> 1.2k Siswa Online
+            </p>
+            <Link href="/community" className="w-full py-4 bg-white text-coffee-950 rounded-2xl flex items-center justify-center gap-2 font-black text-[10px] uppercase tracking-widest hover:bg-coffee-100 transition-all">
+              Join Forum <ArrowRight size={14} />
+            </Link>
           </div>
+
         </div>
       </div>
     </div>
