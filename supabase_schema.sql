@@ -15,13 +15,22 @@ CREATE TABLE IF NOT EXISTS public.users (
     "lastLogin" TIMESTAMP WITH TIME ZONE
 );
 
+-- Helper function to check if user is superadmin (avoids RLS recursion)
+CREATE OR REPLACE FUNCTION public.check_is_superadmin()
+RETURNS BOOLEAN AS $$
+BEGIN
+  RETURN EXISTS (
+    SELECT 1 FROM public.users 
+    WHERE "id" = auth.uid() AND "role" = 'superadmin'
+  );
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
 -- Enable RLS for Users
 ALTER TABLE public.users ENABLE ROW LEVEL SECURITY;
-CREATE POLICY "Users can view their own profile" ON public.users FOR SELECT USING (auth.uid() = "id");
-CREATE POLICY "Users can update their own profile" ON public.users FOR UPDATE USING (auth.uid() = "id");
-CREATE POLICY "Superadmins can view all users" ON public.users FOR SELECT USING (
-  EXISTS (SELECT 1 FROM public.users WHERE "id" = auth.uid() AND "role" = 'superadmin')
-);
+CREATE POLICY "Public profiles are viewable by everyone" ON public.users FOR SELECT USING (true);
+CREATE POLICY "Users can update own profile" ON public.users FOR UPDATE USING (auth.uid() = "id");
+CREATE POLICY "Superadmins can do everything" ON public.users FOR ALL USING (public.check_is_superadmin());
 
 -- 2. Categories Table
 CREATE TABLE IF NOT EXISTS public.categories (
@@ -131,6 +140,7 @@ BEGIN
 END;
 $$ language 'plpgsql';
 
+DROP TRIGGER IF EXISTS update_courses_updatedAt ON public.courses;
 CREATE TRIGGER update_courses_updatedAt
     BEFORE UPDATE ON public.courses
     FOR EACH ROW
