@@ -250,46 +250,25 @@ export default function DashboardPage() {
             )}
           </section>
 
-          {/* Daily Challenge / Activity Visualization */}
-          <section className="bg-white dark:bg-charcoal-light rounded-[3rem] border border-coffee-100 dark:border-charcoal-200 p-10 relative overflow-hidden">
-            <div className="absolute top-0 right-0 p-8 opacity-[0.03] pointer-events-none">
-              <Sparkles size={120} />
-            </div>
-            <div className="flex flex-col md:flex-row gap-10 items-center">
+          {/* Become a Mentor CTA */}
+          <section className="bg-gradient-to-br from-coffee-800 to-charcoal text-white rounded-[3rem] p-10 relative overflow-hidden group shadow-2xl">
+            <div className="absolute top-0 right-0 w-64 h-64 bg-accent/20 blur-[100px] -translate-y-1/2 translate-x-1/2 pointer-events-none" />
+            <div className="relative z-10 flex flex-col md:flex-row items-center justify-between gap-8">
               <div className="flex-1">
-                <div className="inline-flex items-center gap-2 px-3 py-1 bg-emerald-500/10 text-emerald-500 rounded-full text-[10px] font-black uppercase tracking-widest mb-4">
-                  <Zap size={12} /> Daily Quest
+                <div className="inline-flex items-center gap-2 px-3 py-1 bg-accent/20 text-accent rounded-full text-[10px] font-black uppercase tracking-widest mb-4 border border-accent/20">
+                  <Star size={12} fill="currentColor" /> Opportunity
                 </div>
-                <h3 className="text-2xl font-black text-coffee-800 dark:text-white mb-3 tracking-tight">Kuasai satu materi hari ini!</h3>
-                <p className="text-coffee-500 dark:text-coffee-400 mb-6 leading-relaxed">
-                  Konsistensi adalah kunci kesuksesan. Selesaikan minimal satu lesson hari ini untuk mempertahankan streak belajarmu.
+                <h3 className="text-3xl font-black mb-3 tracking-tight">Punya keahlian khusus?</h3>
+                <p className="text-coffee-300 leading-relaxed max-w-lg">
+                  Bagikan ilmumu dan dapatkan penghasilan tambahan dengan menjadi mentor di CoffeeSkill. Bergabunglah dengan ratusan expert lainnya.
                 </p>
-                <div className="flex items-center gap-6">
-                  <div className="flex -space-x-3">
-                    {[1,2,3,4].map(i => (
-                      <div key={i} className="w-10 h-10 rounded-full border-2 border-white dark:border-charcoal-light bg-coffee-100 flex items-center justify-center overflow-hidden">
-                        <img src={`https://i.pravatar.cc/100?u=${i+10}`} alt="user" />
-                      </div>
-                    ))}
-                    <div className="w-10 h-10 rounded-full border-2 border-white dark:border-charcoal-light bg-accent flex items-center justify-center text-[10px] font-black text-white">
-                      +12k
-                    </div>
-                  </div>
-                  <p className="text-[10px] font-bold text-coffee-400 uppercase tracking-widest">Siswa lain sedang belajar</p>
-                </div>
               </div>
-              <div className="w-full md:w-64 flex flex-col items-center text-center p-8 bg-coffee-50 dark:bg-charcoal rounded-[2.5rem] border border-coffee-100 dark:border-charcoal-200 shadow-inner">
-                <div className="relative w-24 h-24 mb-4">
-                  <svg className="w-full h-full transform -rotate-90">
-                    <circle cx="48" cy="48" r="40" stroke="currentColor" strokeWidth="8" fill="transparent" className="text-coffee-100 dark:text-charcoal-300" />
-                    <circle cx="48" cy="48" r="40" stroke="currentColor" strokeWidth="8" fill="transparent" strokeDasharray="251.2" strokeDashoffset={251.2 * (1 - 0.4)} className="text-accent" />
-                  </svg>
-                  <div className="absolute inset-0 flex items-center justify-center">
-                    <span className="text-xl font-black text-coffee-800 dark:text-white">40%</span>
-                  </div>
-                </div>
-                <p className="text-[10px] font-black text-coffee-400 uppercase tracking-widest">Progress Hari Ini</p>
-              </div>
+              <Link 
+                href="/become-mentor" 
+                className="px-10 py-5 bg-accent text-white rounded-[2rem] font-black text-sm hover:bg-accent-hover transition-all shadow-xl shadow-accent/30 active:scale-95 whitespace-nowrap flex items-center gap-2 group"
+              >
+                Jadi Mentor Sekarang <ArrowRight size={18} className="group-hover:translate-x-1 transition-transform" />
+              </Link>
             </div>
           </section>
         </div>
@@ -322,21 +301,29 @@ export default function DashboardPage() {
           <div className="bg-white dark:bg-charcoal-light rounded-[3rem] border border-coffee-100 dark:border-charcoal-200 p-8">
             <h3 className="text-lg font-bold text-coffee-800 dark:text-white mb-8">Aktivitas Baru</h3>
             <div className="space-y-8 relative before:absolute before:left-3 before:top-2 before:bottom-2 before:w-0.5 before:bg-coffee-50 dark:before:bg-charcoal-200">
-              {[
-                { title: "Daftar Kursus", desc: "Cyber Security Mastery", time: "Baru saja", icon: CheckCircle, color: "text-emerald-500", bg: "bg-emerald-500/10" },
-                { title: "Badge Terbuka", desc: "Pemula Cerdas", time: "2 jam yang lalu", icon: Award, color: "text-amber-500", bg: "bg-amber-500/10" },
-              ].map((activity, i) => (
-                <div key={i} className="flex items-start gap-4 relative">
-                  <div className={`w-6 h-6 rounded-full ${activity.bg} ${activity.color} flex items-center justify-center z-10 shrink-0 border-4 border-white dark:border-charcoal-light`}>
-                    <activity.icon size={10} />
+              {userEnrollments.length > 0 ? userEnrollments.slice(0, 5).map((e, i) => {
+                const course = getCourseById(e.courseId);
+                return (
+                  <div key={i} className="flex items-start gap-4 relative">
+                    <div className={`w-6 h-6 rounded-full bg-emerald-500/10 text-emerald-500 flex items-center justify-center z-10 shrink-0 border-4 border-white dark:border-charcoal-light`}>
+                      <CheckCircle size={10} />
+                    </div>
+                    <div>
+                      <h4 className="text-xs font-bold text-coffee-800 dark:text-white">
+                        {e.progress === 100 ? "Menyelesaikan" : "Terdaftar di"}
+                      </h4>
+                      <p className="text-[10px] text-coffee-500 mt-0.5 line-clamp-1">{course?.title}</p>
+                      <p className="text-[9px] font-black text-coffee-300 uppercase tracking-widest mt-2">
+                        {e.enrolledAt}
+                      </p>
+                    </div>
                   </div>
-                  <div>
-                    <h4 className="text-xs font-bold text-coffee-800 dark:text-white">{activity.title}</h4>
-                    <p className="text-[10px] text-coffee-500 mt-0.5">{activity.desc}</p>
-                    <p className="text-[9px] font-black text-coffee-300 uppercase tracking-widest mt-2">{activity.time}</p>
-                  </div>
+                );
+              }) : (
+                <div className="text-center py-4">
+                  <p className="text-[10px] text-coffee-400 italic">Belum ada aktivitas baru</p>
                 </div>
-              ))}
+              )}
             </div>
           </div>
 
