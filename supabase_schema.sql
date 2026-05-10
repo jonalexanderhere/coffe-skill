@@ -30,7 +30,9 @@ $$ LANGUAGE plpgsql SECURITY DEFINER;
 ALTER TABLE public.users ENABLE ROW LEVEL SECURITY;
 CREATE POLICY "Public profiles are viewable by everyone" ON public.users FOR SELECT USING (true);
 CREATE POLICY "Users can update own profile" ON public.users FOR UPDATE USING (auth.uid() = "id");
-CREATE POLICY "Superadmins have full access" ON public.users FOR ALL TO authenticated USING (public.check_is_superadmin());
+CREATE POLICY "Admin Insert" ON public.users FOR INSERT WITH CHECK (public.check_is_superadmin());
+CREATE POLICY "Admin Update" ON public.users FOR UPDATE USING (public.check_is_superadmin());
+CREATE POLICY "Admin Delete" ON public.users FOR DELETE USING (public.check_is_superadmin());
 
 -- 2. Categories Table
 CREATE TABLE IF NOT EXISTS public.categories (
