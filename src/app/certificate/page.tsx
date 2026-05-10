@@ -32,22 +32,37 @@ export default function CertificatePage() {
     });
 
   const handleDownload = async (cert: any) => {
-    const { default: html2canvas } = await import("html2canvas");
-    const { default: jsPDF } = await import("jspdf");
-    
-    // We need to render the template to capture it
-    const element = document.getElementById(`cert-template-${cert.id}`);
-    if (!element) {
-      alert("Template sertifikat tidak ditemukan! Sedang menyiapkan...");
-      return;
-    }
-
     try {
+      const { default: html2canvas } = await import("html2canvas");
+      const { default: jsPDF } = await import("jspdf");
+      
+      // Select the specific template for this certificate
+      const element = document.getElementById(`cert-template-${cert.id}`);
+      
+      if (!element) {
+        console.error("Template element not found");
+        alert("Gagal menyiapkan template sertifikat. Silakan coba lagi.");
+        return;
+      }
+
+      // Wait a bit for images/styles to stabilize
+      await new Promise(resolve => setTimeout(resolve, 300));
+
       const canvas = await html2canvas(element, {
-        scale: 3, // Even higher quality for printing
+        scale: 2, // 2 is usually enough for a good quality PDF and faster than 3
         useCORS: true,
-        allowTaint: true,
+        allowTaint: false,
         logging: false,
+        backgroundColor: '#0F1115', // Matches CertificateTemplate background
+        windowWidth: 1200, // Fixed width for consistent rendering
+        onclone: (clonedDoc) => {
+          const clonedElement = clonedDoc.getElementById(`cert-template-${cert.id}`);
+          if (clonedElement) {
+            clonedElement.style.display = 'block';
+            clonedElement.style.visibility = 'visible';
+            clonedElement.style.opacity = '1';
+          }
+        }
       });
       
       const imgData = canvas.toDataURL("image/png", 1.0);
@@ -66,7 +81,7 @@ export default function CertificatePage() {
       alert("Sertifikat berhasil diunduh!");
     } catch (error) {
       console.error("Download error:", error);
-      alert("Gagal mengunduh sertifikat. Silakan coba lagi.");
+      alert("Gagal mengunduh sertifikat. Terjadi kesalahan sistem.");
     }
   };
 
@@ -114,7 +129,7 @@ export default function CertificatePage() {
                           e.stopPropagation(); 
                           setSelectedCert(cert);
                           // Wait for React to render the hidden template
-                          setTimeout(() => handleDownload(cert), 500);
+                          setTimeout(() => handleDownload(cert), 100);
                         }}
                         className="flex-1 flex items-center justify-center gap-1.5 py-2.5 text-xs font-medium text-white bg-accent hover:bg-accent-hover rounded-xl transition-colors"
                       >

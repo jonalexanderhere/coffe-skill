@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { Star, Clock, BookOpen, Users } from "lucide-react";
 import { Course } from "@/lib/types";
 import { formatCurrency } from "@/lib/utils";
@@ -11,19 +12,32 @@ export default function CourseCard({ course }: { course: Course }) {
       <div className="bg-white dark:bg-charcoal-light rounded-2xl border border-coffee-100 dark:border-charcoal-200 overflow-hidden hover:shadow-md hover:border-coffee-200 dark:hover:border-charcoal-300 transition-all duration-300 hover:-translate-y-0.5">
         {/* Thumbnail */}
         <div className="relative aspect-video bg-gradient-to-br from-coffee-100 to-coffee-50 dark:from-charcoal-200 dark:to-charcoal overflow-hidden">
-          <div className="absolute inset-0 flex items-center justify-center">
-            <BookOpen size={32} className="text-coffee-300 dark:text-charcoal-300" />
+          {course.thumbnail ? (
+            <Image 
+              src={course.thumbnail} 
+              alt={course.title}
+              fill
+              className="object-cover group-hover:scale-105 transition-transform duration-500"
+              sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+            />
+          ) : (
+            <div className="absolute inset-0 flex items-center justify-center">
+              <BookOpen size={32} className="text-coffee-300 dark:text-charcoal-300" />
+            </div>
+          )}
+          
+          <div className="absolute top-3 left-3 flex flex-col gap-2">
+            {course.status === 'published' && course.studentCount > 1000 && (
+              <span className="px-2.5 py-1 text-[10px] font-bold text-white bg-accent rounded-lg shadow-lg shadow-accent/20 uppercase tracking-wider">
+                Popular
+              </span>
+            )}
+            {course.isFree && (
+              <span className="px-2.5 py-1 text-[10px] font-bold text-white bg-emerald-500 rounded-lg shadow-lg shadow-emerald-500/20 uppercase tracking-wider">
+                Gratis
+              </span>
+            )}
           </div>
-          {course.status === 'published' && course.studentCount > 1000 && (
-            <span className="absolute top-3 left-3 px-2.5 py-1 text-xs font-semibold text-white bg-accent rounded-lg">
-              Popular
-            </span>
-          )}
-          {course.isFree && (
-            <span className="absolute top-3 left-3 px-2.5 py-1 text-xs font-semibold text-white bg-emerald-500 rounded-lg">
-              Gratis
-            </span>
-          )}
         </div>
 
         {/* Content */}

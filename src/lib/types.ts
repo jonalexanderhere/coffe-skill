@@ -30,6 +30,7 @@ export interface Course {
   description: string;
   shortDescription?: string;
   thumbnail?: string;
+  ebookUrl?: string;
   category: string;
   level: CourseLevel;
   price: number;

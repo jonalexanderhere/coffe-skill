@@ -3,13 +3,14 @@
 import { motion } from "framer-motion";
 import { Users, BookOpen, DollarSign, Activity, ArrowUpRight, Search, Filter, MoreVertical, Shield, AlertTriangle, CheckCircle, Clock } from "lucide-react";
 import Link from "next/link";
-import { useUserStore } from "@/lib/store";
-import { useCourseStore } from "@/lib/store";
+import { useUserStore, useCourseStore, useEnrollmentStore, useTransactionStore } from "@/lib/store";
 import { formatCurrency } from "@/lib/utils";
 
 export default function SuperAdminOverviewPage() {
   const { users } = useUserStore();
   const { courses } = useCourseStore();
+  const { enrollments } = useEnrollmentStore();
+  const { transactions } = useTransactionStore();
 
   const stats = {
     totalUsers: users.length,
@@ -19,7 +20,9 @@ export default function SuperAdminOverviewPage() {
     pendingCourses: courses.filter(c => c.status === 'pending_review').length,
     totalMentors: users.filter(u => u.role === 'mentor').length,
     pendingMentors: users.filter(u => u.role === 'mentor' && u.status === 'pending').length,
-    totalRevenue: 450000000,
+    totalRevenue: transactions
+      .filter(t => t.status === 'completed' && t.type === 'purchase')
+      .reduce((acc, t) => acc + t.amount, 0),
   };
 
   const recentUsers = users.slice(0, 5);

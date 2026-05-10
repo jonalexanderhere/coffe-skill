@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-import { User, Course, Enrollment, Category, PlatformSettings, Quiz, QuizQuestion, Chapter, Material, Event, Testimonial, FAQ, TeamMember, AuditLog, TrafficLog, SystemHealth, CourseLevel } from './types';
+import { User, Course, Enrollment, Category, PlatformSettings, Quiz, QuizQuestion, Chapter, Material, Event, Testimonial, FAQ, TeamMember, AuditLog, TrafficLog, SystemHealth, CourseLevel, Transaction } from './types';
 
 // ============================
 // User Store
@@ -15,58 +15,13 @@ interface UserStore {
   updateUserStatus: (id: string, status: User['status']) => void;
   toggleWishlist: (userId: string, courseId: string) => void;
   deleteDuplicateUsers: () => void;
+  setUsers: (users: User[]) => void;
 }
 
 export const useUserStore = create<UserStore>()(
   persist(
     (set, get) => ({
-      users: [
-        {
-          id: 'ghifari-azhar-admin',
-          name: 'Ghifari Azhar',
-          email: 'fahriazhar148@gmail.com',
-          password: 'CoffeeSkill2026!',
-          role: 'superadmin',
-          status: 'active',
-          joinedDate: new Date().toISOString().split('T')[0]
-        },
-        {
-          id: 'rico-admin',
-          name: 'Rico',
-          email: 'rikoiqbal36@gmail.com',
-          password: 'CoffeeSkill2026!',
-          role: 'superadmin',
-          status: 'active',
-          joinedDate: new Date().toISOString().split('T')[0]
-        },
-        {
-          id: 'mentor-1',
-          name: 'Mentor 1',
-          email: 'mentor1@coffeeskill.id',
-          password: 'CoffeeSkill2026!',
-          role: 'mentor',
-          status: 'active',
-          joinedDate: new Date().toISOString().split('T')[0]
-        },
-        {
-          id: 'student-1',
-          name: 'Siswa Demo 1',
-          email: 'student1@coffeeskill.id',
-          password: 'CoffeeSkill2026!',
-          role: 'student',
-          status: 'active',
-          joinedDate: '2026-01-01'
-        },
-        {
-          id: 'student-2',
-          name: 'Siswa Demo 2',
-          email: 'student2@coffeeskill.id',
-          password: 'CoffeeSkill2026!',
-          role: 'student',
-          status: 'active',
-          joinedDate: '2026-01-15'
-        }
-      ],
+      users: [],
       addUser: (user) => set((state) => {
         const exists = state.users.some(u => u.email === user.email);
         if (exists) return state;
@@ -112,6 +67,7 @@ export const useUserStore = create<UserStore>()(
         });
         return { users: uniqueUsers };
       }),
+      setUsers: (users) => set({ users }),
     }),
     { name: 'coffeeskill-users' }
   )
@@ -139,59 +95,13 @@ interface CourseStore {
   addMaterial: (courseId: string, chapterId: string, material: Material) => void;
   updateMaterial: (courseId: string, chapterId: string, materialId: string, updates: Partial<Material>) => void;
   deleteMaterial: (courseId: string, chapterId: string, materialId: string) => void;
+  setCourses: (courses: Course[]) => void;
 }
 
 export const useCourseStore = create<CourseStore>()(
   persist(
     (set, get) => ({
-      courses: [
-        {
-          id: 'course-1',
-          title: 'Ethical Hacking For Beginners',
-          description: 'Pelajari dasar-dasar hacking etis dan keamanan siber.',
-          price: 0,
-          category: 'Cyber Security',
-          level: 'Pemula',
-          mentorId: 'mentor-1',
-          mentorName: 'Mentor 1',
-          thumbnail: 'https://images.unsplash.com/photo-1550751827-4bd374c3f58b?auto=format&fit=crop&q=80&w=800',
-          rating: 4.8,
-          reviewCount: 12,
-          studentCount: 1250,
-          lessons: 24,
-          duration: '12 Jam',
-          status: 'published',
-          publishedAt: '2026-02-01',
-          isFree: true,
-          tags: ['Cyber', 'Security', 'Hacking'],
-          createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString(),
-          chapters: []
-        },
-        {
-          id: 'course-2',
-          title: 'Fullstack Web Development with Next.js',
-          description: 'Bangun aplikasi web modern dengan Next.js dan Tailwind CSS.',
-          price: 0,
-          category: 'Web Development',
-          level: 'Menengah',
-          mentorId: 'ghifari-azhar-admin',
-          mentorName: 'Ghifari Azhar',
-          thumbnail: 'https://images.unsplash.com/photo-1618477247222-acbdb0e159b3?auto=format&fit=crop&q=80&w=800',
-          rating: 4.9,
-          reviewCount: 45,
-          studentCount: 3200,
-          lessons: 48,
-          duration: '32 Jam',
-          status: 'published',
-          publishedAt: '2026-03-15',
-          isFree: true,
-          tags: ['Web', 'Development', 'Next.js'],
-          createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString(),
-          chapters: []
-        }
-      ],
+      courses: [],
       addCourse: (course) =>
         set((state) => ({ courses: [...state.courses, course] })),
       updateCourse: (id, updates) =>
@@ -318,6 +228,7 @@ export const useCourseStore = create<CourseStore>()(
               : c
           ),
         })),
+      setCourses: (courses) => set({ courses }),
     }),
     { name: 'coffeeskill-courses' }
   )
@@ -336,25 +247,13 @@ interface EnrollmentStore {
   getEnrollment: (userId: string, courseId: string) => Enrollment | undefined;
   isUserEnrolled: (userId: string, courseId: string) => boolean;
   deleteDuplicateEnrollments: () => void;
+  setEnrollments: (enrollments: Enrollment[]) => void;
 }
 
 export const useEnrollmentStore = create<EnrollmentStore>()(
   persist(
     (set, get) => ({
-      enrollments: [
-        {
-          id: 'enroll-demo-1',
-          userId: 'student-1',
-          courseId: 'course-1',
-          enrolledAt: '2026-02-01',
-          progress: 100,
-          completedChapters: [],
-          completedMaterials: [],
-          certificateIssued: true,
-          certificateId: 'CERT-STU1-COUR1',
-          completedAt: '2026-03-01'
-        }
-      ],
+      enrollments: [],
       enrollUser: (userId, courseId) =>
         set((state) => {
           // Prevent duplicate enrollments
@@ -457,6 +356,7 @@ export const useEnrollmentStore = create<EnrollmentStore>()(
         });
         return { enrollments: unique };
       }),
+      setEnrollments: (enrollments) => set({ enrollments }),
     }),
     { name: 'coffeeskill-enrollments' }
   )
@@ -529,21 +429,13 @@ interface CategoryStore {
   addCategory: (category: Category) => void;
   updateCategory: (id: string, updates: Partial<Category>) => void;
   deleteCategory: (id: string) => void;
+  setCategories: (categories: Category[]) => void;
 }
 
 export const useCategoryStore = create<CategoryStore>()(
   persist(
     (set, get) => ({
-      categories: [
-        { id: 'cat-1', name: 'Cyber Security', icon: 'Shield', color: '#EF4444', courseCount: 0 },
-        { id: 'cat-2', name: 'Web Development', icon: 'Globe', color: '#3B82F6', courseCount: 0 },
-        { id: 'cat-3', name: 'Mobile Dev', icon: 'Smartphone', color: '#10B981', courseCount: 0 },
-        { id: 'cat-4', name: 'Data Science', icon: 'BarChart3', color: '#8B5CF6', courseCount: 0 },
-        { id: 'cat-5', name: 'UI/UX Design', icon: 'Palette', color: '#F59E0B', courseCount: 0 },
-        { id: 'cat-6', name: 'Cloud Computing', icon: 'Cloud', color: '#06B6D4', courseCount: 0 },
-        { id: 'cat-7', name: 'Artificial Intelligence', icon: 'Brain', color: '#EC4899', courseCount: 0 },
-        { id: 'cat-8', name: 'Digital Marketing', icon: 'Settings', color: '#6366F1', courseCount: 0 },
-      ],
+      categories: [],
       addCategory: (category) => set((state) => ({ categories: [...state.categories, category] })),
       updateCategory: (id, updates) =>
         set((state) => ({
@@ -551,6 +443,7 @@ export const useCategoryStore = create<CategoryStore>()(
         })),
       deleteCategory: (id) =>
         set((state) => ({ categories: state.categories.filter((c) => c.id !== id) })),
+      setCategories: (categories) => set({ categories }),
     }),
     { name: 'coffeeskill-categories' }
   )
@@ -564,6 +457,7 @@ interface EventStore {
   addEvent: (event: Event) => void;
   updateEvent: (id: string, updates: Partial<Event>) => void;
   deleteEvent: (id: string) => void;
+  setEvents: (events: Event[]) => void;
 }
 
 export const useEventStore = create<EventStore>()(
@@ -577,6 +471,7 @@ export const useEventStore = create<EventStore>()(
         })),
       deleteEvent: (id) =>
         set((state) => ({ events: state.events.filter((e) => e.id !== id) })),
+      setEvents: (events) => set({ events }),
     }),
     { name: 'coffeeskill-events' }
   )
@@ -589,6 +484,7 @@ interface TestimonialStore {
   testimonials: Testimonial[];
   addTestimonial: (testimonial: Testimonial) => void;
   deleteTestimonial: (id: string) => void;
+  setTestimonials: (testimonials: Testimonial[]) => void;
 }
 
 export const useTestimonialStore = create<TestimonialStore>()(
@@ -598,6 +494,7 @@ export const useTestimonialStore = create<TestimonialStore>()(
       addTestimonial: (testimonial) => set((state) => ({ testimonials: [...state.testimonials, testimonial] })),
       deleteTestimonial: (id) =>
         set((state) => ({ testimonials: state.testimonials.filter((t) => t.id !== id) })),
+      setTestimonials: (testimonials) => set({ testimonials }),
     }),
     { name: 'coffeeskill-testimonials' }
   )
@@ -610,6 +507,7 @@ interface FAQStore {
   faqs: FAQ[];
   addFAQ: (faq: FAQ) => void;
   deleteFAQ: (question: string) => void;
+  setFAQs: (faqs: FAQ[]) => void;
 }
 
 export const useFAQStore = create<FAQStore>()(
@@ -619,6 +517,7 @@ export const useFAQStore = create<FAQStore>()(
       addFAQ: (faq) => set((state) => ({ faqs: [...state.faqs, faq] })),
       deleteFAQ: (question) =>
         set((state) => ({ faqs: state.faqs.filter((f) => f.question !== question) })),
+      setFAQs: (faqs) => set({ faqs }),
     }),
     { name: 'coffeeskill-faqs' }
   )
@@ -663,26 +562,7 @@ interface TeamStore {
 export const useTeamStore = create<TeamStore>()(
   persist(
     (set) => ({
-      teamMembers: [
-        {
-          id: 'ghifari-azhar',
-          name: 'Ghifari Azhar',
-          email: 'fahriazhar148@gmail.com',
-          role: 'Developer',
-          avatar: 'https://i.ibb.co.com/wZ2g7G5w/image.png',
-          github: 'jonalexanderhere',
-          bio: 'Passionate developer dan founder di CoffeeSkill. Membangun platform pembelajaran teknologi terdepan dari Lampung Barat.'
-        },
-        {
-          id: 'rico',
-          name: 'Rico',
-          email: 'rikoiqbal36@gmail.com',
-          role: 'Developer',
-          avatar: 'https://i.ibb.co.com/GQGdMzYV/Rico.jpg',
-          github: 'RikoDev-it',
-          bio: 'Creative Developer dan Co-Founder di CoffeeSkill. Berfokus pada pengembangan antarmuka pengguna yang intuitif dan performa aplikasi yang tinggi.'
-        }
-      ],
+      teamMembers: [],
       addTeamMember: (member) => set((state) => ({ teamMembers: [...state.teamMembers, member] })),
       deleteTeamMember: (id) =>
         set((state) => ({ teamMembers: state.teamMembers.filter((t) => t.id !== id) })),
@@ -705,6 +585,7 @@ interface DraftCourseStore {
     price: number;
     isFree: boolean;
     thumbnail: string;
+    ebookUrl: string;
     tags: string[];
     reviews?: { userId: string; userName: string; rating: number; comment: string; date: string }[];
     createdAt: string;
@@ -729,6 +610,7 @@ export const useDraftCourseStore = create<DraftCourseStore>()(
         price: 0,
         isFree: false,
         thumbnail: "",
+        ebookUrl: "",
         tags: [],
         createdAt: ""
       },
@@ -749,6 +631,7 @@ export const useDraftCourseStore = create<DraftCourseStore>()(
           price: 0,
           isFree: false,
           thumbnail: "",
+          ebookUrl: "",
           tags: [],
           createdAt: ""
         },
@@ -775,42 +658,8 @@ interface SystemStore {
 export const useSystemStore = create<SystemStore>()(
   persist(
     (set) => ({
-      logs: [
-        {
-          id: 'log-1',
-          timestamp: new Date(Date.now() - 1000 * 60 * 5).toISOString(),
-          action: 'Login Success',
-          category: 'auth',
-          details: 'User fahriazhar148@gmail.com logged in from Chrome/Windows',
-          ipAddress: '182.1.44.12',
-          status: 'success',
-          severity: 'info'
-        },
-        {
-          id: 'log-2',
-          timestamp: new Date(Date.now() - 1000 * 60 * 15).toISOString(),
-          action: 'Course Published',
-          category: 'content',
-          details: 'Course "Mastering Coffee Brewing" was published by Mentor 1',
-          ipAddress: '182.1.44.12',
-          status: 'success',
-          severity: 'info'
-        },
-        {
-          id: 'log-3',
-          timestamp: new Date(Date.now() - 1000 * 60 * 45).toISOString(),
-          action: 'SQL Injection Attempt',
-          category: 'security',
-          details: 'Detected suspicious pattern in request to /api/courses',
-          ipAddress: '45.122.1.9',
-          status: 'failure',
-          severity: 'high'
-        }
-      ],
-      trafficLogs: [
-        { id: 'tf-1', timestamp: new Date().toISOString(), ip: '182.1.44.12', method: 'GET', path: '/api/courses', status: 200, latency: 45, userAgent: 'Mozilla/5.0...', action: 'allow' },
-        { id: 'tf-2', timestamp: new Date().toISOString(), ip: '45.122.1.9', method: 'POST', path: '/api/admin/settings', status: 403, latency: 12, userAgent: 'Python-requests...', action: 'block' },
-      ],
+      logs: [],
+      trafficLogs: [],
       health: {
         cpuUsage: 12.5,
         memoryUsage: 450,
@@ -854,5 +703,25 @@ export const useSystemStore = create<SystemStore>()(
       clearLogs: () => set({ logs: [], trafficLogs: [] })
     }),
     { name: 'coffeeskill-system' }
+  )
+);
+
+// ============================
+// Transaction Store
+// ============================
+interface TransactionStore {
+  transactions: Transaction[];
+  addTransaction: (transaction: Transaction) => void;
+  setTransactions: (transactions: Transaction[]) => void;
+}
+
+export const useTransactionStore = create<TransactionStore>()(
+  persist(
+    (set) => ({
+      transactions: [],
+      addTransaction: (transaction) => set((state) => ({ transactions: [...state.transactions, transaction] })),
+      setTransactions: (transactions) => set({ transactions }),
+    }),
+    { name: 'coffeeskill-transactions' }
   )
 );

@@ -27,7 +27,7 @@ import {
   Lock,
 } from "lucide-react";
 
-const tabs = ["Overview", "Kurikulum", "Review", "Diskusi"];
+const tabs = ["Overview", "Buku", "Kurikulum", "Review", "Diskusi"];
 
 // Demo curriculum removed in favor of dynamic data
 
@@ -147,12 +147,12 @@ export default function CourseDetailPage() {
             <div className="lg:col-span-2">
               {/* Tabs */}
               <div className="bg-white dark:bg-charcoal-light rounded-2xl border border-coffee-100 dark:border-charcoal-200 overflow-hidden mb-6">
-                <div className="flex border-b border-coffee-100 dark:border-charcoal-200">
-                  {tabs.map((tab) => (
+                <div className="flex border-b border-coffee-100 dark:border-charcoal-200 overflow-x-auto scrollbar-hide">
+                  {tabs.filter(t => t !== "Buku" || course.ebookUrl).map((tab) => (
                     <button
                       key={tab}
                       onClick={() => setActiveTab(tab)}
-                      className={`flex-1 py-3.5 text-sm font-medium transition-colors relative ${
+                      className={`flex-1 min-w-[100px] py-3.5 text-sm font-medium transition-colors relative ${
                         activeTab === tab
                           ? "text-accent"
                           : "text-coffee-500 dark:text-coffee-400 hover:text-coffee-700 dark:hover:text-white"
@@ -204,6 +204,39 @@ export default function CourseDetailPage() {
                           <li className="flex items-start gap-2.5"><span className="text-coffee-300">•</span>Laptop/PC dengan koneksi internet</li>
                           <li className="flex items-start gap-2.5"><span className="text-coffee-300">•</span>Semangat untuk belajar</li>
                         </ul>
+                      </div>
+                    </div>
+                  )}
+
+                  {activeTab === "Buku" && course.ebookUrl && (
+                    <div className="space-y-6">
+                      <div className="flex items-center justify-between">
+                        <h3 className="text-lg font-semibold text-coffee-800 dark:text-white">Cuplikan Buku Digital</h3>
+                        <a 
+                          href={course.ebookUrl} 
+                          target="_blank" 
+                          rel="noopener noreferrer"
+                          className="text-xs font-bold text-accent hover:underline flex items-center gap-1"
+                        >
+                          Buka di Google Drive <Share2 size={12} />
+                        </a>
+                      </div>
+                      
+                      <div className="aspect-[3/4] md:aspect-[16/10] w-full bg-coffee-50 dark:bg-charcoal rounded-2xl overflow-hidden border border-coffee-100 dark:border-charcoal-200 shadow-inner">
+                        <iframe 
+                          src={course.ebookUrl.includes("drive.google.com") 
+                            ? course.ebookUrl.replace("/view", "/preview").replace("/edit", "/preview")
+                            : course.ebookUrl}
+                          className="w-full h-full border-0"
+                          allow="autoplay"
+                        />
+                      </div>
+                      
+                      <div className="p-4 bg-accent/5 border border-accent/10 rounded-xl">
+                        <p className="text-xs text-coffee-600 dark:text-coffee-400 leading-relaxed">
+                          <strong className="text-accent">Info:</strong> Ini adalah pratinjau buku digital yang disediakan oleh mentor. 
+                          Daftar kursus ini untuk mendapatkan akses penuh ke seluruh materi dan diskusi eksklusif.
+                        </p>
                       </div>
                     </div>
                   )}

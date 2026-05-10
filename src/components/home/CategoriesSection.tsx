@@ -56,7 +56,10 @@ export default function CategoriesSection() {
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
           {categories.map((cat, i) => {
             const Icon = iconMap[cat.icon] || Globe;
-            const realCourseCount = courses.filter(c => c.category === cat.name && c.status === 'published').length;
+            const realCourseCount = courses.filter(c => 
+              c.category?.toLowerCase() === cat.name?.toLowerCase() && 
+              (c.status === 'published' || c.status === 'approved')
+            ).length;
             
             return (
               <motion.div

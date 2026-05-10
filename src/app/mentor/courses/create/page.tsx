@@ -169,6 +169,7 @@ export default function CreateCoursePage() {
       description: basicInfo.description,
       shortDescription: basicInfo.shortDescription,
       thumbnail: basicInfo.thumbnail,
+      ebookUrl: basicInfo.ebookUrl,
       category: basicInfo.category,
       level: basicInfo.level,
       price: basicInfo.isFree ? 0 : basicInfo.price,
@@ -287,6 +288,25 @@ export default function CreateCoursePage() {
                 placeholder="Ringkasan singkat kursus (maks 100 karakter)"
                 className="w-full px-4 py-3 text-sm bg-coffee-50 dark:bg-charcoal border border-coffee-200 dark:border-charcoal-200 rounded-xl text-coffee-800 dark:text-white focus:outline-none"
               />
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-coffee-700 dark:text-coffee-300 mb-1.5">
+                E-book Preview (Google Drive Link)
+              </label>
+              <div className="relative">
+                <LinkIcon size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-coffee-400" />
+                <input
+                  type="url"
+                  value={basicInfo.ebookUrl}
+                  onChange={(e) => updateBasicInfo({ ebookUrl: e.target.value })}
+                  placeholder="https://drive.google.com/file/d/..."
+                  className="w-full pl-10 pr-4 py-3 text-sm bg-coffee-50 dark:bg-charcoal border border-coffee-200 dark:border-charcoal-200 rounded-xl text-coffee-800 dark:text-white focus:outline-none"
+                />
+              </div>
+              <p className="mt-1 text-[10px] text-coffee-400">
+                Gunakan link &quot;Share&quot; dari Google Drive agar siswa dapat membaca cuplikan buku.
+              </p>
             </div>
 
             <div>

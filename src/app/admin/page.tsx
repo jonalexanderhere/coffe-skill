@@ -2,7 +2,7 @@
 
 import { motion } from "framer-motion";
 import { Users, BookOpen, DollarSign, Activity, ArrowUpRight, Search, Filter, MoreVertical } from "lucide-react";
-import { useUserStore, useCourseStore, useEnrollmentStore } from "@/lib/store";
+import { useUserStore, useCourseStore, useEnrollmentStore, useTransactionStore } from "@/lib/store";
 import { formatCurrency } from "@/lib/utils";
 
 export default function AdminDashboardPage() {
@@ -10,11 +10,14 @@ export default function AdminDashboardPage() {
   const { courses } = useCourseStore();
   const { enrollments } = useEnrollmentStore();
 
+  const { transactions } = useTransactionStore();
+  
   const totalUsers = users.length;
   const totalCourses = courses.length;
   const activeUsers = users.filter(u => u.status === 'active').length;
-  // Simplified revenue calculation for demo
-  const totalRevenue = enrollments.length * 250000; 
+  const totalRevenue = transactions
+    .filter(t => t.status === 'completed' && t.type === 'purchase')
+    .reduce((acc, t) => acc + t.amount, 0);
 
   const stats = [
     { label: "Total Users", value: totalUsers.toLocaleString(), icon: Users, color: "text-blue-500", trend: "+0%" },
