@@ -562,7 +562,26 @@ interface TeamStore {
 export const useTeamStore = create<TeamStore>()(
   persist(
     (set) => ({
-      teamMembers: [],
+      teamMembers: [
+        {
+          id: '1',
+          name: 'Ghifari Azhar',
+          email: 'fahriazhar148@gmail.com',
+          role: 'Founder & Lead Developer',
+          avatar: 'https://i.ibb.co.com/7d0b2tR3/ghifari.png',
+          github: 'jonalexanderhere',
+          bio: 'Visi saya adalah mendemokratisasi pendidikan teknologi di seluruh pelosok Indonesia. Instagram: @jonobaek'
+        },
+        {
+          id: '2',
+          name: 'Rico',
+          email: 'rikoiqbal36@gmail.com',
+          role: 'Co-Founder & UI/UX Designer',
+          avatar: 'https://i.ibb.co.com/Cp7nNF9k/Rico.jpg',
+          github: 'RikoDev-it',
+          bio: 'Berfokus pada pengalaman pengguna yang intuitif dan desain yang modern untuk memudahkan proses belajar.'
+        }
+      ],
       addTeamMember: (member) => set((state) => ({ teamMembers: [...state.teamMembers, member] })),
       deleteTeamMember: (id) =>
         set((state) => ({ teamMembers: state.teamMembers.filter((t) => t.id !== id) })),
