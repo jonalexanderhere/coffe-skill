@@ -570,7 +570,8 @@ export const useTeamStore = create<TeamStore>()(
           role: 'Founder & Lead Developer',
           avatar: 'https://i.ibb.co.com/7d0b2tR3/ghifari.png',
           github: 'jonalexanderhere',
-          bio: 'Visi saya adalah mendemokratisasi pendidikan teknologi di seluruh pelosok Indonesia. Instagram: @jonobaek'
+          instagram: 'jonobaek',
+          bio: 'Visi saya adalah mendemokratisasi pendidikan teknologi di seluruh pelosok Indonesia.'
         },
         {
           id: '2',

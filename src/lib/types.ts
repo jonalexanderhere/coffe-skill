@@ -242,6 +242,7 @@ export interface TeamMember {
   role: string;
   avatar: string;
   github: string;
+  instagram?: string;
   bio?: string;
 }
 

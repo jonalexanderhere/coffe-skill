@@ -86,6 +86,18 @@ export default function TeamSection() {
                   <ExternalLink size={14} />
                   GitHub
                 </Link>
+                {member.instagram && (
+                  <Link
+                    href={`https://instagram.com/${member.instagram}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex-1 flex items-center justify-center gap-2 px-3 py-2.5 text-xs font-medium text-coffee-600 dark:text-coffee-300 bg-coffee-50 dark:bg-charcoal hover:bg-coffee-100 dark:hover:bg-charcoal-200 rounded-lg transition-colors"
+                    title="Instagram"
+                  >
+                    <ExternalLink size={14} />
+                    IG
+                  </Link>
+                )}
               </div>
             </div>
           </motion.div>
