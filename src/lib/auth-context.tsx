@@ -11,7 +11,7 @@ interface AuthContextType {
   isAuthenticated: boolean;
   isLoading: boolean;
   login: (credentials: LoginCredentials) => Promise<boolean>;
-  loginWithGoogle: () => Promise<void>;
+  loginWithGoogle: (role?: UserRole) => Promise<void>;
   register: (data: RegisterData) => Promise<boolean>;
   logout: () => void;
   updateUser: (updates: Partial<User>) => void;
@@ -53,12 +53,21 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             // Auto-register if not in store but in Supabase (OAuth case)
             const newUser: User = {
               id: supabaseUser.id,
-              name: supabaseUser.user_metadata.full_name || supabaseUser.email?.split('@')[0] || "User",
-              email: supabaseUser.email || "",
+              name: supabaseUser.user_metadata?.full_name || supabaseUser.email?.split('@')[0] || 'User',
+              email: supabaseUser.email || '',
               role: 'student',
               status: 'active',
               joinedDate: new Date().toISOString().split('T')[0],
             };
+            
+            // Check for requested role
+            const requestedRole = localStorage.getItem('pending_role') as UserRole;
+            if (requestedRole && (requestedRole === 'mentor' || requestedRole === 'student')) {
+              newUser.role = requestedRole;
+              if (requestedRole === 'mentor') newUser.status = 'pending';
+              localStorage.removeItem('pending_role');
+            }
+
             addUser(newUser);
             existingUser = newUser;
           }
@@ -94,6 +103,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             status: 'active',
             joinedDate: new Date().toISOString().split('T')[0],
           };
+
+          // Check for requested role
+          const requestedRole = localStorage.getItem('pending_role') as UserRole;
+          if (requestedRole && (requestedRole === 'mentor' || requestedRole === 'student')) {
+            newUser.role = requestedRole;
+            if (requestedRole === 'mentor') newUser.status = 'pending';
+            localStorage.removeItem('pending_role');
+          }
+
           addUser(newUser);
           existingUser = newUser;
         }
@@ -235,12 +253,17 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   };
 
-  const loginWithGoogle = async () => {
-    console.log("Google Login initiated. Supabase Configured:", isSupabaseConfigured);
+  const loginWithGoogle = async (role?: UserRole) => {
+    console.log("Google Login initiated. Target Role:", role);
     if (!isSupabaseConfigured) {
-      console.error("Supabase is not configured. Check your environment variables.");
-      alert("Konfigurasi Supabase belum lengkap. Pastikan file .env.local sudah benar.");
+      console.error("Supabase is not configured.");
+      alert("Konfigurasi Supabase belum lengkap.");
       return;
+    }
+    
+    // Store requested role for registration
+    if (role) {
+      localStorage.setItem('pending_role', role);
     }
     
     try {
