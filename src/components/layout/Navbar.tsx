@@ -20,6 +20,7 @@ import { useAuth } from "@/lib/auth-context";
 
 const navLinks = [
   { label: "Explore", href: "/explore" },
+  { label: "E-books", href: "/explore/ebooks" },
   { label: "Event", href: "/events" },
   { label: "Community", href: "/community" },
   { label: "About", href: "/about" },

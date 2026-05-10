@@ -36,12 +36,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       if (stored) {
         try {
           const parsedUser = JSON.parse(stored);
-          const existsInStore = users.some((u) => u.id === parsedUser.id);
-          if (existsInStore) {
-            setUser(parsedUser);
-          } else {
-            localStorage.removeItem(AUTH_KEY);
-          }
+          setUser(parsedUser);
         } catch {
           localStorage.removeItem(AUTH_KEY);
         }
